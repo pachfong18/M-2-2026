@@ -101,3 +101,94 @@ table.admin-table th { color: var(--aqua); background: rgba(0,0,0,0.5); }
 .hidden { display: none !important; }
 .auth-link { text-align: center; color: #888; cursor: pointer; margin-top: 20px; font-size: 14px; }
 .auth-link:hover { color: #fff; }
+/* =========================================
+   📱 โหมดสมาร์ทโฟน (Mobile Responsive)
+   ========================================= */
+@media screen and (max-width: 768px) {
+    /* ปรับให้เรียงจากบนลงล่างแทนซ้ายไปขวา */
+    body { 
+        flex-direction: column; 
+    }
+
+    /* Sidebar ย้ายมาด้านบนและยืดเต็มจอ */
+    .sidebar { 
+        width: 100%; 
+        padding: 15px; 
+        border-right: none; 
+        border-bottom: 1px solid var(--glass-border); 
+        display: block; 
+        height: auto;
+    }
+
+    .sidebar-header { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 15px; 
+        margin-bottom: 15px;
+    }
+    
+    .sidebar-header h1 { margin-top: 0; font-size: 12px; }
+    .logo-glow { font-size: 30px; }
+
+    /* เมนูเปลี่ยนเป็นแนวนอน ปัดซ้ายขวาได้ */
+    #menu-items:not(.hidden) { 
+        display: flex; 
+        overflow-x: auto; 
+        gap: 10px; 
+        padding-bottom: 5px;
+        scrollbar-width: none; /* ซ่อน Scrollbar บน Firefox */
+    }
+    #menu-items::-webkit-scrollbar { display: none; } /* ซ่อน Scrollbar บน Chrome/Safari */
+
+    .nav-btn { 
+        margin-bottom: 0; 
+        padding: 10px 15px; 
+        flex-shrink: 0; /* ป้องกันปุ่มบีบตัว */
+        font-size: 9px;
+    }
+
+    /* พื้นที่เนื้อหา ปรับระยะขอบให้พอดีมือถือ */
+    .main-content { 
+        padding: 15px; 
+        padding-bottom: 80px; /* เว้นที่ให้ Status Bar ด้านล่าง */
+    }
+    
+    .content-card { 
+        padding: 20px; 
+        min-height: auto;
+    }
+
+    /* Status Bar ขยายเต็มขอบซ้ายขวา */
+    .status-bar { 
+        left: 0; 
+        padding: 10px; 
+        font-size: 10px; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 5px;
+        text-align: center;
+    }
+
+    /* ตารางไขคดี และ สมุดคะแนน ให้เลื่อนปัดซ้ายขวาได้ (ไม่ทะลุจอ) */
+    .murdle-grid, table.admin-table { 
+        display: block; 
+        overflow-x: auto; 
+        white-space: nowrap; 
+    }
+
+    /* กล่องแชทปรับขนาดให้พอดีจอมือถือ */
+    #chat-widget { 
+        width: 90vw; 
+        right: 5vw; 
+        bottom: 100px; 
+    }
+
+    /* ปรับ Layout หน้า Character Profille */
+    .stats-box { padding: 10px; }
+    .stats-val { font-size: 16px; }
+    
+    /* ปรับ Input และปุ่มต่างๆ ให้เต็มนิ้วกดง่ายขึ้น */
+    input, select { padding: 12px; font-size: 14px; }
+    .btn-p { padding: 12px; font-size: 12px; }
+}
