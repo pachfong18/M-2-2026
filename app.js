@@ -26,7 +26,7 @@ const CASES_DB = [
 let caseStatus = { activeCaseId: 0, cluesToggle: [false,false,false,false,false,false,false,false,false,false], isRevealed: false };
 window.murdleState = {}; 
 const TEACHER_ID = "pchrkr007";
-const ROOMS_LIST = ["London", "Newyork", "Tokyo", "Paris", "Seoul"]; // รายชื่อห้องทั้งหมด
+const ROOMS_LIST = ["London", "Newyork", "Tokyo", "Paris", "Seoul"]; 
 
 let teacherChatUnsubscribe = null;
 let currentTeacherChatId = null;
@@ -93,14 +93,15 @@ auth.onAuthStateChanged(user => {
         
         db.collection("students").doc(userId).onSnapshot(doc => {
             userData = doc.data();
-            applyUserCosmetics(); 
-
-            document.getElementById('st-mp').innerText = userData.mana;
-            document.getElementById('st-lv').innerText = userData.level;
-            
-            if(userId !== TEACHER_ID && document.getElementById('chat-fab').classList.contains('hidden')){
-                document.getElementById('chat-fab').classList.remove('hidden');
-                initTeacherChatListener();
+            if(userData) {
+                applyUserCosmetics(); 
+                document.getElementById('st-mp').innerText = userData.mana || 0;
+                document.getElementById('st-lv').innerText = userData.level || 1;
+                
+                if(userId !== TEACHER_ID && document.getElementById('chat-fab').classList.contains('hidden')){
+                    document.getElementById('chat-fab').classList.remove('hidden');
+                    initTeacherChatListener();
+                }
             }
             if(!document.getElementById('game-content').innerHTML) showPage('dashboard', document.querySelector('.nav-btn'));
         });
@@ -161,19 +162,7 @@ function applyUserCosmetics() {
     }
 }
 
-function addExp(studentId, amount) {
-    let newExp = (userData.exp || 0) + amount; let newLevel = userData.level; let newMana = userData.mana;
-    if (newExp >= 100) { newLevel++; newExp -= 100; newMana += 30; alert("🎉 LEVEL UP! ได้รับโบนัส 30 MP!"); }
-    db.collection("students").doc(studentId).update({ exp: newExp, level: newLevel, mana: newMana });
-}
-function teacherAddExp(id, cExp, cLv, cMp) {
-    let nExp = cExp + 50; let nLv = cLv; let nMp = cMp;
-    if(nExp >= 100) { nLv++; nExp -= 100; nMp += 30; }
-    db.collection("students").doc(id).update({ exp: nExp, level: nLv, mana: nMp }).then(() => {
-        alert("เพิ่ม 50 EXP ให้รหัส " + id + " สำเร็จ!"); viewTeacher('students');
-    });
-}
-
+// --- Chat System ---
 function toggleChatWidget() {
     const widget = document.getElementById('chat-widget');
     widget.classList.toggle('hidden');
@@ -224,6 +213,7 @@ function showPage(id, btn) {
     if (id === 'dashboard') {
         let pendingTasksHTML = "";
         const sm = userData.submittedMissions || []; const rm = userData.returnedMissions || [];
+        
         if (questStatus.unit1_m1 && !sm.includes('unit1_m1') && !rm.includes('unit1_m1')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 1</li>";
         if (questStatus.unit1_m2 && !sm.includes('unit1_m2') && !rm.includes('unit1_m2')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 2</li>";
         if (questStatus.unit2_m1 && !sm.includes('unit2_m1') && !rm.includes('unit2_m1')) pendingTasksHTML += "<li>📄 Unit 2 - อัปโหลดงานชิ้นที่ 1</li>";
@@ -233,6 +223,7 @@ function showPage(id, btn) {
         if (questStatus.boss_unit1 && !(userData.completedBosses || []).includes('unit1')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 1 แนวคิดเชิงคำนวณ</li>";
         if (questStatus.boss_unit2 && !(userData.completedBosses || []).includes('unit2')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 2 การออกแบบอัลกอริทึม</li>";
         if (questStatus.boss_unit3 && !(userData.completedBosses || []).includes('unit3')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 3 การเขียนโปรแกรม</li>";
+        
         const hasAns = userData.caseAnswer && userData.caseAnswer.who;
         if (!caseStatus.isRevealed && !hasAns) pendingTasksHTML += "<li>🕵️‍♂️ แฟ้มคดี: ยังไม่ได้ระบุตัวคนร้าย!</li>";
         if (pendingTasksHTML === "") pendingTasksHTML = "<li style='color:var(--aqua);'>ไม่มีงานค้าง! พักผ่อนได้เลยนักรบ</li>";
@@ -253,9 +244,11 @@ function showPage(id, btn) {
                 </div>
             </div>`;
     }
-    // ... Shop, Lessons, Quests, Detective, Status โค้ดเหมือนเดิม
+
     else if (id === 'shop') {
-        let shopHTML = `<h2 class="pixel-font" style="color:#ffcc00; text-shadow:0 0 10px #ffcc00;">>>> Mana Shop</h2><p style="color:#aaa;">ซื้อของตกแต่งโปรไฟล์! (MP ปัจจุบัน: <span style="color:var(--aqua); font-weight:bold;">${userData.mana}</span>)</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">`;
+        let shopHTML = `<h2 class="pixel-font" style="color:#ffcc00; text-shadow:0 0 10px #ffcc00;">>>> Mana Shop</h2>
+                        <p style="color:#aaa;">ซื้อของตกแต่งโปรไฟล์! (MP ปัจจุบัน: <span style="color:var(--aqua); font-weight:bold;">${userData.mana}</span>)</p>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">`;
         SHOP_ITEMS.forEach(item => {
             const isBought = (userData.inventory || []).includes(item.id);
             let isEquipped = false;
@@ -265,17 +258,26 @@ function showPage(id, btn) {
             if(item.type==='frame') isEquipped = userData.equippedFrame === item.value;
 
             let btnHTML = "";
-            if(isEquipped) btnHTML = `<button class="btn-p pixel-font" style="background:#444; color:#fff; width:100%; font-size:10px; cursor:default;" disabled>กำลังใช้งาน</button>`;
-            else if (isBought) btnHTML = `<button class="btn-p pixel-font" style="background:var(--p-green); width:100%; font-size:10px;" onclick="equipItem('${item.id}', '${item.type}', '${item.value}')">สวมใส่</button>`;
-            else {
+            if(isEquipped) {
+                btnHTML = `<button class="btn-p pixel-font" style="background:#444; color:#fff; width:100%; font-size:10px; cursor:default;" disabled>กำลังใช้งาน</button>`;
+            } else if (isBought) {
+                btnHTML = `<button class="btn-p pixel-font" style="background:var(--p-green); width:100%; font-size:10px;" onclick="equipItem('${item.id}', '${item.type}', '${item.value}')">สวมใส่</button>`;
+            } else {
                 const canAfford = userData.mana >= item.cost;
                 btnHTML = `<button class="btn-p pixel-font" style="background:${canAfford?'#ffcc00':'#444'}; color:#000; width:100%; font-size:10px;" ${canAfford?'':'disabled'} onclick="buyItem('${item.id}', ${item.cost})">ซื้อเลย</button>`;
             }
             let previewClass = item.type === 'glow' ? item.value : ''; let framePrClass = item.type === 'frame' ? item.value : '';
-            shopHTML += `<div class="shop-card ${framePrClass}" style="margin-bottom:10px;"><i class="fa-solid ${item.icon} ${previewClass}"></i><h3 class="${previewClass}" style="font-size:14px; margin:0;">${item.name}</h3><div class="shop-price">${item.cost} MP</div>${btnHTML}</div>`;
+            shopHTML += `
+                <div class="shop-card ${framePrClass}" style="margin-bottom:10px;">
+                    <i class="fa-solid ${item.icon} ${previewClass}"></i>
+                    <h3 class="${previewClass}" style="font-size:14px; margin:0;">${item.name}</h3>
+                    <div class="shop-price">${item.cost} MP</div>
+                    ${btnHTML}
+                </div>`;
         });
         display.innerHTML = shopHTML + "</div>";
     }
+
     else if (id === 'lessons') {
         let lessonHTML = `<h2 class="pixel-font aqua-glow">>>> Lessons (สื่อการสอน)</h2>`;
         ['unit1', 'unit2', 'unit3'].forEach((u, idx) => {
@@ -294,29 +296,106 @@ function showPage(id, btn) {
         });
         display.innerHTML = lessonHTML;
     }
+
     else if (id === 'quests') {
-        display.innerHTML = `<h2 class="pixel-font aqua-glow">>>> Quest Board</h2><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-top:20px;">${renderQuestCard(1, "แนวคิดเชิงคำนวณ", questStatus.unit1)}${renderQuestCard(2, "การออกแบบอัลกอริทึม", questStatus.unit2)}${renderQuestCard(3, "การเขียนโปรแกรม Python", questStatus.unit3)}</div>`;
+        display.innerHTML = `
+            <h2 class="pixel-font aqua-glow">>>> Quest Board</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-top:20px;">
+                ${renderQuestCard(1, "แนวคิดเชิงคำนวณ", questStatus.unit1)}
+                ${renderQuestCard(2, "การออกแบบอัลกอริทึม", questStatus.unit2)}
+                ${renderQuestCard(3, "การเขียนโปรแกรม Python", questStatus.unit3)}
+            </div>`;
     }
+
     else if (id === 'detective') {
-        window.isDoingQuiz = true; const currentCase = CASES_DB[caseStatus.activeCaseId]; const hasAns = userData.caseAnswer && userData.caseAnswer.who;
+        window.isDoingQuiz = true;
+        const currentCase = CASES_DB[caseStatus.activeCaseId] || CASES_DB[0];
+        const hasAns = userData.caseAnswer && userData.caseAnswer.who;
+        
         let resultUI = "";
         if(caseStatus.isRevealed) {
             const isCorrect = (userData.caseAnswer.who === currentCase.ansWho && userData.caseAnswer.where === currentCase.ansWhere && userData.caseAnswer.what === currentCase.ansWhat);
-            resultUI = `<div style="background:${isCorrect ? 'rgba(0,255,65,0.1)' : 'rgba(255,51,102,0.1)'}; border:2px solid ${isCorrect ? '#00ff41' : 'var(--alert-red)'}; padding:20px; border-radius:10px; margin-bottom:20px; text-align:center;"><h3 class="pixel-font" style="color:${isCorrect ? '#00ff41':'var(--alert-red)'};">${isCorrect ? 'MISSION CLEARED! 🎉' : 'MISSION FAILED! 😭'}</h3><p>ความจริงคือ: ${currentCase.ansWho} ก่อเหตุที่ ${currentCase.ansWhere} โดยใช้ ${currentCase.ansWhat}</p><p style="color:#aaa;">คำตอบของคุณ: ${userData.caseAnswer.who} / ${userData.caseAnswer.where} / ${userData.caseAnswer.what}</p></div>`;
+            resultUI = `
+                <div style="background:${isCorrect ? 'rgba(0,255,65,0.1)' : 'rgba(255,51,102,0.1)'}; border:2px solid ${isCorrect ? '#00ff41' : 'var(--alert-red)'}; padding:20px; border-radius:10px; margin-bottom:20px; text-align:center;">
+                    <h3 class="pixel-font" style="color:${isCorrect ? '#00ff41':'var(--alert-red)'};">${isCorrect ? 'MISSION CLEARED! 🎉' : 'MISSION FAILED! 😭'}</h3>
+                    <p>ความจริงคือ: ${currentCase.ansWho} ก่อเหตุที่ ${currentCase.ansWhere} โดยใช้ ${currentCase.ansWhat}</p>
+                    <p style="color:#aaa;">คำตอบของคุณ: ${userData.caseAnswer.who} / ${userData.caseAnswer.where} / ${userData.caseAnswer.what}</p>
+                </div>`;
         }
+
         let cluesHTML = "";
-        caseStatus.cluesToggle.forEach((isOpen, idx) => { if(isOpen) cluesHTML += `<p style="font-size:12px; color:#fff; border-left:2px solid var(--aqua); padding-left:10px;">${currentCase.clues[idx]}</p>`; });
+        caseStatus.cluesToggle.forEach((isOpen, idx) => {
+            if(isOpen && currentCase.clues[idx]) cluesHTML += `<p style="font-size:12px; color:#fff; border-left:2px solid var(--aqua); padding-left:10px;">${currentCase.clues[idx]}</p>`;
+        });
         if(cluesHTML === "") cluesHTML = `<p style="color:#555; font-size:12px;">🔒 ครูเบียร์ยังไม่เปิดเผยเบาะแสใดๆ ในขณะนี้</p>`;
+
         let optWho = `<option value="">-- ใคร? --</option>` + currentCase.suspects.map(s => `<option value="${s}">${s}</option>`).join('');
         let optWhere = `<option value="">-- ที่ไหน? --</option>` + currentCase.locations.map(l => `<option value="${l}">${l}</option>`).join('');
         let optWhat = `<option value="">-- ใช้อะไร? --</option>` + currentCase.weapons.map(w => `<option value="${w}">${w}</option>`).join('');
 
-        display.innerHTML = `<div id="detective-main"><h2 class="pixel-font" style="color:var(--detective-purple); text-shadow:0 0 10px var(--detective-purple);">>>> ${currentCase.title}</h2><div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; border-left:5px solid var(--detective-purple); margin-bottom:20px;"><p style="font-size:14px; color:#ddd; margin:0;">${currentCase.story}</p></div>${resultUI}<h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[ ตารางไขว้ตัดช้อยส์ Murdle Grid 4x4x4 ]</h3><div style="overflow-x:auto;"><table class="murdle-grid"><tr><th class="empty-cell"></th><th colspan="4" class="header-group" style="background:#222; border-right:3px solid #666;">สถานที่เกิดเหตุ (WHERE)</th><th colspan="4" class="header-group" style="background:#222;">อุปกรณ์ที่ใช้ (WHAT)</th></tr><tr><th style="background:#111;"></th><th>${currentCase.locations[0]}</th><th>${currentCase.locations[1]}</th><th>${currentCase.locations[2]}</th><th style="border-right:3px solid #666;">${currentCase.locations[3]}</th><th>${currentCase.weapons[0]}</th><th>${currentCase.weapons[1]}</th><th>${currentCase.weapons[2]}</th><th>${currentCase.weapons[3]}</th></tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[0]}</th>${getCell(0,0)} ${getCell(0,1)} ${getCell(0,2)} ${getCell(0,3,true)} ${getCell(0,4)} ${getCell(0,5)} ${getCell(0,6)} ${getCell(0,7)}</tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[1]}</th>${getCell(1,0)} ${getCell(1,1)} ${getCell(1,2)} ${getCell(1,3,true)} ${getCell(1,4)} ${getCell(1,5)} ${getCell(1,6)} ${getCell(1,7)}</tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[2]}</th>${getCell(2,0)} ${getCell(2,1)} ${getCell(2,2)} ${getCell(2,3,true)} ${getCell(2,4)} ${getCell(2,5)} ${getCell(2,6)} ${getCell(2,7)}</tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[3]}</th>${getCell(3,0)} ${getCell(3,1)} ${getCell(3,2)} ${getCell(3,3,true)} ${getCell(3,4)} ${getCell(3,5)} ${getCell(3,6)} ${getCell(3,7)}</tr><tr><td colspan="9" class="empty-cell" style="height:10px; border-bottom:3px solid #666; border-top:3px solid #666;"></td></tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[0]}</th>${getCell(4,0)} ${getCell(4,1)} ${getCell(4,2)} ${getCell(4,3,true)}<td colspan="4" rowspan="4" class="empty-cell"></td></tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[1]}</th>${getCell(5,0)} ${getCell(5,1)} ${getCell(5,2)} ${getCell(5,3,true)}</tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[2]}</th>${getCell(6,0)} ${getCell(6,1)} ${getCell(6,2)} ${getCell(6,3,true)}</tr><tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[3]}</th>${getCell(7,0)} ${getCell(7,1)} ${getCell(7,2)} ${getCell(7,3,true)}</tr></table></div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;"><div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid #444;"><h3 class="pixel-font" style="font-size:10px; color:var(--accent-gold);">[ เบาะแสที่พบ ]</h3>${cluesHTML}</div><div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid var(--aqua);"><h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[ พิพากษาคดี ]</h3><p style="font-size:10px; color:#aaa;">ส่งคำตอบล่าสุด: ${hasAns ? userData.caseAnswer.who + " / " + userData.caseAnswer.where + " / " + userData.caseAnswer.what : "ยังไม่ส่ง"}</p><select id="ansWho">${optWho}</select><select id="ansWhere">${optWhere}</select><select id="ansWhat">${optWhat}</select><button class="btn-p pixel-font" style="width:100%; font-size:10px; padding:12px;" onclick="saveCaseAnswer()" ${caseStatus.isRevealed ? 'disabled style="opacity:0.5;"' : ''}>${caseStatus.isRevealed ? 'ปิดรับคำตอบแล้ว' : 'ส่งคำพิพากษา'}</button></div></div></div>`;
+        display.innerHTML = `
+            <div id="detective-main">
+                <h2 class="pixel-font" style="color:var(--detective-purple); text-shadow:0 0 10px var(--detective-purple);">>>> ${currentCase.title}</h2>
+                <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; border-left:5px solid var(--detective-purple); margin-bottom:20px;">
+                    <p style="font-size:14px; color:#ddd; margin:0;">${currentCase.story}</p>
+                </div>
+                ${resultUI}
+                <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[ ตารางไขว้ตัดช้อยส์ Murdle Grid 4x4x4 ]</h3>
+                <div style="overflow-x:auto;">
+                    <table class="murdle-grid">
+                        <tr><th class="empty-cell"></th><th colspan="4" class="header-group" style="background:#222; border-right:3px solid #666;">สถานที่เกิดเหตุ (WHERE)</th><th colspan="4" class="header-group" style="background:#222;">อุปกรณ์ที่ใช้ (WHAT)</th></tr>
+                        <tr><th style="background:#111;"></th><th>${currentCase.locations[0]}</th><th>${currentCase.locations[1]}</th><th>${currentCase.locations[2]}</th><th style="border-right:3px solid #666;">${currentCase.locations[3]}</th><th>${currentCase.weapons[0]}</th><th>${currentCase.weapons[1]}</th><th>${currentCase.weapons[2]}</th><th>${currentCase.weapons[3]}</th></tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[0]}</th>${getCell(0,0)} ${getCell(0,1)} ${getCell(0,2)} ${getCell(0,3,true)} ${getCell(0,4)} ${getCell(0,5)} ${getCell(0,6)} ${getCell(0,7)}</tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[1]}</th>${getCell(1,0)} ${getCell(1,1)} ${getCell(1,2)} ${getCell(1,3,true)} ${getCell(1,4)} ${getCell(1,5)} ${getCell(1,6)} ${getCell(1,7)}</tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[2]}</th>${getCell(2,0)} ${getCell(2,1)} ${getCell(2,2)} ${getCell(2,3,true)} ${getCell(2,4)} ${getCell(2,5)} ${getCell(2,6)} ${getCell(2,7)}</tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.suspects[3]}</th>${getCell(3,0)} ${getCell(3,1)} ${getCell(3,2)} ${getCell(3,3,true)} ${getCell(3,4)} ${getCell(3,5)} ${getCell(3,6)} ${getCell(3,7)}</tr>
+                        <tr><td colspan="9" class="empty-cell" style="height:10px; border-bottom:3px solid #666; border-top:3px solid #666;"></td></tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[0]}</th>${getCell(4,0)} ${getCell(4,1)} ${getCell(4,2)} ${getCell(4,3,true)}<td colspan="4" rowspan="4" class="empty-cell"></td></tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[1]}</th>${getCell(5,0)} ${getCell(5,1)} ${getCell(5,2)} ${getCell(5,3,true)}</tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[2]}</th>${getCell(6,0)} ${getCell(6,1)} ${getCell(6,2)} ${getCell(6,3,true)}</tr>
+                        <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[3]}</th>${getCell(7,0)} ${getCell(7,1)} ${getCell(7,2)} ${getCell(7,3,true)}</tr>
+                    </table>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
+                    <div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid #444;">
+                        <h3 class="pixel-font" style="font-size:10px; color:var(--accent-gold);">[ เบาะแสที่พบ ]</h3>
+                        ${cluesHTML}
+                    </div>
+                    <div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid var(--aqua);">
+                        <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[ พิพากษาคดี ]</h3>
+                        <p style="font-size:10px; color:#aaa;">ส่งคำตอบล่าสุด: ${hasAns ? userData.caseAnswer.who + " / " + userData.caseAnswer.where + " / " + userData.caseAnswer.what : "ยังไม่ส่ง"}</p>
+                        <select id="ansWho">${optWho}</select><select id="ansWhere">${optWhere}</select><select id="ansWhat">${optWhat}</select>
+                        <button class="btn-p pixel-font" style="width:100%; font-size:10px; padding:12px;" onclick="saveCaseAnswer()" ${caseStatus.isRevealed ? 'disabled style="opacity:0.5;"' : ''}>${caseStatus.isRevealed ? 'ปิดรับคำตอบแล้ว' : 'ส่งคำพิพากษา'}</button>
+                    </div>
+                </div>
+            </div>`;
     }
 
     else if (id === 'status') {
-        const intStat = Math.floor(userData.level * 1.5) + 10; const agiStat = Math.floor(userData.level * 1.2) + 8; const lukStat = Math.floor(userData.level * 2.0) + 5;
-        display.innerHTML = `<h2 class="pixel-font aqua-glow">>>> Character Profile</h2><div style="display:flex; flex-wrap:wrap; gap:30px; margin-top:20px;"><div style="flex:1; min-width:250px; background:rgba(255,255,255,0.05); padding:30px; border-radius:20px; border:1px solid var(--glass-border); text-align:center;"><div id="char-avatar-box" class="avatar-box ${frameClass}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border-radius:${borderRadius};"><i class="fa-solid fa-user-astronaut"></i></div><h3 id="char-name-disp" style="margin:0; font-size:22px;">${iconStr}<span class="${glowClass}">${userData.name}</span></h3><p class="pixel-font" style="color:#ffcc00; font-size:10px; margin-top:10px; text-shadow:0 0 5px #ffcc00;">${displayTitle}</p><p style="color:#aaa; font-size:14px;">ID: ${userData.studentId} | ห้อง: ${userData.room||'-'} | เลขที่: ${userData.number||'-'}</p></div><div style="flex:2; min-width:300px;"><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:15px; margin-bottom:20px;"><div class="stats-box">INT (ปัญญา)<span class="stats-val">${intStat}</span></div><div class="stats-box">AGI (ความไว)<span class="stats-val">${agiStat}</span></div><div class="stats-box">LUK (โชค)<span class="stats-val">${lukStat}</span></div></div><div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:12px; border:1px solid #444;"><p style="margin:0 0 10px 0; font-weight:bold;">Progress to Next Level</p><div class="bar-outer"><div class="bar-fill" style="width:${userData.exp}%; background:var(--aqua); box-shadow:0 0 10px var(--aqua);"></div></div><p style="text-align:right; margin:5px 0 0 0; font-size:12px;">${userData.exp} / 100 EXP</p></div></div></div>`;
+        const intStat = Math.floor(userData.level * 1.5) + 10;
+        const agiStat = Math.floor(userData.level * 1.2) + 8;
+        const lukStat = Math.floor(userData.level * 2.0) + 5;
+        
+        display.innerHTML = `
+            <h2 class="pixel-font aqua-glow">>>> Character Profile</h2>
+            <div style="display:flex; flex-wrap:wrap; gap:30px; margin-top:20px;">
+                <div style="flex:1; min-width:250px; background:rgba(255,255,255,0.05); padding:30px; border-radius:20px; border:1px solid var(--glass-border); text-align:center;">
+                    <div id="char-avatar-box" class="avatar-box ${frameClass}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border-radius:${borderRadius};"><i class="fa-solid fa-user-astronaut"></i></div>
+                    <h3 id="char-name-disp" style="margin:0; font-size:22px;">${iconStr}<span class="${glowClass}">${userData.name}</span></h3>
+                    <p class="pixel-font" style="color:#ffcc00; font-size:10px; margin-top:10px; text-shadow:0 0 5px #ffcc00;">${displayTitle}</p>
+                    <p style="color:#aaa; font-size:14px;">ID: ${userData.studentId} | ห้อง: ${userData.room||'-'} | เลขที่: ${userData.number||'-'}</p>
+                </div>
+                <div style="flex:2; min-width:300px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:15px; margin-bottom:20px;">
+                        <div class="stats-box">INT (ปัญญา)<span class="stats-val">${intStat}</span></div><div class="stats-box">AGI (ความไว)<span class="stats-val">${agiStat}</span></div><div class="stats-box">LUK (โชค)<span class="stats-val">${lukStat}</span></div>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:12px; border:1px solid #444;">
+                        <p style="margin:0 0 10px 0; font-weight:bold;">Progress to Next Level</p>
+                        <div class="bar-outer"><div class="bar-fill" style="width:${userData.exp}%; background:var(--aqua); box-shadow:0 0 10px var(--aqua);"></div></div>
+                        <p style="text-align:right; margin:5px 0 0 0; font-size:12px;">${userData.exp} / 100 EXP</p>
+                    </div>
+                </div>
+            </div>`;
     }
 
     else if (id === 'teacher') {
@@ -337,6 +416,173 @@ function showPage(id, btn) {
             <div id="teacher-view"></div>`;
         viewTeacher('students');
     }
+}
+
+// --- Shop Equipment Logic ---
+function buyItem(id, cost) {
+    if(!confirm("ยืนยันการซื้อไอเทมนี้ด้วย " + cost + " MP?")) return;
+    let inv = userData.inventory || []; inv.push(id);
+    db.collection("students").doc(userData.studentId).update({ mana: userData.mana - cost, inventory: inv }).then(() => {
+        alert("ซื้อสำเร็จ!"); showPage('shop', document.querySelectorAll('.nav-btn')[4]);
+    });
+}
+function equipItem(id, type, val) {
+    let updateData = {};
+    if(type === 'title') updateData.equippedTitle = val;
+    if(type === 'icon') updateData.equippedIcon = val;
+    if(type === 'glow') updateData.equippedGlow = val;
+    if(type === 'frame') updateData.equippedFrame = val;
+    db.collection("students").doc(userData.studentId).update(updateData).then(() => {
+        alert("สวมใส่ไอเท็มแล้ว! ไปดูที่หน้า Character ได้เลย"); showPage('shop', document.querySelectorAll('.nav-btn')[4]);
+    });
+}
+
+// --- Quest Board & Google Drive Upload ---
+function renderQuestCard(unitNum, title, isUnlocked) {
+    if(!isUnlocked) return `<div class="content-card" style="min-height:auto; padding:30px; opacity:0.5; border-color:#555;"><div style="font-size:30px; text-align:right; color:#555;"><i class="fa-solid fa-lock"></i></div><h3 class="pixel-font" style="font-size:12px; color:#888;">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#888;">ยังไม่ถึงเวลาเปิดภารกิจ</p></div>`;
+    return `<div class="content-card" style="min-height:auto; padding:30px; border-color:var(--aqua);"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#ddd;">ส่งงาน 2 ชิ้น และเตรียมตัวสู้บอส</p><button class="btn-p pixel-font" style="width:100%; margin-top:10px; font-size:10px;" onclick="openQuestDetail('unit${unitNum}')">ENTER QUEST</button></div>`;
+}
+
+function openQuestDetail(u) {
+    const sm = userData.submittedMissions || [];
+    const rm = userData.returnedMissions || [];
+    const isBossCompleted = (userData.completedBosses || []).includes(u);
+    const isBossOpen = questStatus['boss_' + u];
+    
+    let m1HTML = ""; let m2HTML = "";
+    if (questStatus[`${u}_m1`]) {
+        if (rm.includes(`${u}_m1`)) {
+            m1HTML = `<div style="color:#33ccff; text-align:center; padding:10px; border:1px dashed #33ccff;">🔄 ตรวจและส่งคืนแล้ว</div>`;
+        } else if (sm.includes(`${u}_m1`)) {
+            m1HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 1 เรียบร้อยแล้ว</div>`;
+        } else {
+            m1HTML = `<input type="file" id="file_${u}_m1" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m1', '${u}_m1')">UPLOAD TO DRIVE</button>`;
+        }
+    } else m1HTML = `<div style="color:#888; text-align:center; padding:10px;">🔒 ครูเบียร์ยังไม่เปิดรับงานนี้</div>`;
+
+    if (questStatus[`${u}_m2`]) {
+        if (rm.includes(`${u}_m2`)) {
+            m2HTML = `<div style="color:#33ccff; text-align:center; padding:10px; border:1px dashed #33ccff;">🔄 ตรวจและส่งคืนแล้ว</div>`;
+        } else if (sm.includes(`${u}_m2`)) {
+            m2HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 2 เรียบร้อยแล้ว</div>`;
+        } else {
+            m2HTML = `<input type="file" id="file_${u}_m2" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m2', '${u}_m2')">UPLOAD TO DRIVE</button>`;
+        }
+    } else m2HTML = `<div style="color:#888; text-align:center; padding:10px;">🔒 ครูเบียร์ยังไม่เปิดรับงานนี้</div>`;
+
+    let bossSectionHTML = "";
+    if (isBossCompleted) bossSectionHTML = `<div style="background:rgba(0,255,65,0.1); border:2px solid #00ff41; padding:20px; border-radius:10px; text-align:center;"><h3 class="pixel-font" style="color:#00ff41; margin-top:0;">🎉 BOSS CLEARED!</h3><p style="color:#ddd; margin-bottom:0;">คุณได้กำจัดบอสประจำหน่วยนี้ไปแล้ว (ไม่สามารถโจมตีซ้ำได้)</p></div>`;
+    else if (!isBossOpen) bossSectionHTML = `<div style="background:rgba(255,255,255,0.05); border:2px dashed #666; padding:20px; border-radius:10px; text-align:center;"><h3 class="pixel-font" style="color:#aaa; margin-top:0;"><i class="fa-solid fa-lock"></i> BOSS LOCKED</h3><p style="color:#888; margin-bottom:0;">ครูเบียร์ยังไม่เปิดให้เข้าสู้บอสในขณะนี้ เตรียมตัวให้พร้อม!</p></div>`;
+    else {
+        window.isDoingQuiz = true;
+        bossSectionHTML = `<div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">>>> BOSS FIGHT</h3><p style="font-size:12px; color:#ccc;">ตอบให้ถูกมากที่สุดเพื่อรับโบนัส MP! (คำเตือน: ห้ามพับจอ!)</p><div id="quiz-container_${u}"></div></div>`;
+    }
+
+    document.getElementById('game-content').innerHTML = `
+        <button class="btn-p pixel-font" style="background:transparent; color:#fff; border-color:#fff; padding:10px; font-size:10px; margin-bottom:20px;" onclick="showPage('quests', document.querySelectorAll('.nav-btn')[2])"><< BACK</button>
+        <h2 class="pixel-font aqua-glow">>>> ${u.toUpperCase()} MISSIONS</h2>
+        <div style="background:rgba(0,255,255,0.05); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;"><h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[MISSION 1] อัปโหลดงานชิ้นที่ 1</h3>${m1HTML}</div>
+        <div style="background:rgba(0,255,255,0.05); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;"><h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[MISSION 2] อัปโหลดงานชิ้นที่ 2</h3>${m2HTML}</div>
+        ${bossSectionHTML}
+    `;
+    if (!isBossCompleted && isBossOpen) renderBossQuestions(u);
+}
+
+function uploadDrive(inputId, missionId) {
+    const fileInput = document.getElementById(inputId);
+    const file = fileInput.files[0];
+    
+    if (!file) return alert("กรุณาเลือกไฟล์ก่อนส่งงานครับ!");
+    if (!GAS_URL || GAS_URL === "") return alert("ครูเบียร์ยังไม่ได้ตั้งค่า GAS_URL ในโค้ดครับ!");
+
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ กำลังอัปโหลด...";
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function() {
+        const base64Raw = reader.result;
+        const payload = { file: base64Raw, filename: file.name, missionId: missionId, studentName: userData.name };
+
+        fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.text())
+        .then(response => {
+            if (response === "Success") {
+                alert("✅ ส่งงานสำเร็จ! ไฟล์ถูกจัดเก็บลงโฟลเดอร์ " + missionId + " เรียบร้อย");
+                let sm = userData.submittedMissions || [];
+                if (!sm.includes(missionId)) sm.push(missionId);
+                db.collection("students").doc(userData.studentId).update({ submittedMissions: sm }).then(() => {
+                    openQuestDetail(missionId.split('_')[0]); 
+                });
+            } else {
+                alert("❌ เกิดข้อผิดพลาด: " + response);
+                btn.innerText = originalText; btn.disabled = false;
+            }
+        }).catch(err => {
+            alert("❌ ไม่สามารถเชื่อมต่อกับ Server Google Drive ได้");
+            console.error(err);
+            btn.innerText = originalText; btn.disabled = false;
+        });
+    };
+}
+
+function renderBossQuestions(u) {
+    const container = document.getElementById(`quiz-container_${u}`);
+    const qs = quizData[u] || [];
+    if(!qs.length) return container.innerHTML = "<p style='color:#aaa;'>ครูเบียร์ยังไม่ได้ลงข้อสอบครับ รออัปเดต...</p>";
+    let qHTML = "";
+    qs.forEach((q, i) => {
+        qHTML += `<div style="background:#111; padding:15px; margin:15px 0; border-left:4px solid var(--alert-red); border-radius:5px;">
+            <p style="margin-top:0;"><strong>ข้อ ${i+1}:</strong> ${q.q}</p>
+            <label style="display:block; margin:5px 0; cursor:pointer;"><input type="radio" name="q_${u}_${i}" value="A"> ก. ${q.a}</label>
+            <label style="display:block; margin:5px 0; cursor:pointer;"><input type="radio" name="q_${u}_${i}" value="B"> ข. ${q.b}</label>
+            <label style="display:block; margin:5px 0; cursor:pointer;"><input type="radio" name="q_${u}_${i}" value="C"> ค. ${q.c}</label>
+            <label style="display:block; margin:5px 0; cursor:pointer;"><input type="radio" name="q_${u}_${i}" value="D"> ง. ${q.d}</label>
+        </div>`;
+    });
+    qHTML += `<button class="btn-p btn-danger pixel-font" style="width:100%; margin-top:10px;" onclick="submitBoss('${u}')">SUBMIT ATTACK</button>`;
+    container.innerHTML = qHTML;
+}
+
+function submitBoss(u) {
+    if(!confirm("ส่งคำตอบแล้วไม่สามารถแก้ไขหรือทำซ้ำได้ ยืนยันโจมตี?")) return;
+    window.isDoingQuiz = false;
+    const qs = quizData[u] || [];
+    let score = 0;
+    qs.forEach((q, i) => {
+        const sel = document.querySelector(`input[name="q_${u}_${i}"]:checked`);
+        if(sel && sel.value === q.key) score++;
+    });
+    const mpGain = score * 5;
+    alert(`การต่อสู้จบลง! ตอบถูก ${score}/${qs.length} ข้อ ได้รับ ${mpGain} MP`);
+    let completedArr = userData.completedBosses || [];
+    if (!completedArr.includes(u)) completedArr.push(u);
+    db.collection("students").doc(userData.studentId).update({ mana: userData.mana + mpGain, completedBosses: completedArr }).then(() => showPage('quests', document.querySelectorAll('.nav-btn')[2]));
+}
+
+function getCell(r, c, isBorder=false) {
+    let val = window.murdleState[`r${r}c${c}`] || "";
+    let cls = val === 'O' ? 'yes' : (val === 'X' ? 'no' : '');
+    let borderStyle = isBorder ? 'border-right:3px solid #666;' : '';
+    return `<td id="cell_${r}_${c}" class="clickable ${cls}" style="${borderStyle}" onclick="clickGrid(${r},${c})">${val}</td>`;
+}
+function clickGrid(r, c) {
+    let key = `r${r}c${c}`;
+    let curr = window.murdleState[key] || "";
+    let next = curr === "" ? "X" : (curr === "X" ? "O" : "");
+    window.murdleState[key] = next;
+    let cell = document.getElementById(`cell_${r}_${c}`);
+    cell.innerText = next;
+    cell.className = "clickable " + (next==='O'?'yes':(next==='X'?'no':''));
+}
+function saveCaseAnswer() {
+    const who = document.getElementById('ansWho').value;
+    const where = document.getElementById('ansWhere').value;
+    const what = document.getElementById('ansWhat').value;
+    if(!who || !where || !what) return alert("ข้อมูลไม่ครบ!");
+    db.collection("students").doc(userData.studentId).update({ caseAnswer: {who:who, where:where, what:what} }).then(() => alert("บันทึกสำเร็จ!"));
 }
 
 // 🌟 ตัวช่วยจัดกลุ่มนักเรียน (แยก 5 ห้อง) 🌟
@@ -365,7 +611,7 @@ function generateGroupedTables(studentsList, renderRowFunc, headerHTML, emptyTex
     return finalHTML;
 }
 
-// --- TEACHER VIEWS (อัปเดตใช้ระบบจัดกลุ่ม 5 ห้อง) ---
+// --- TEACHER VIEWS ---
 function viewTeacher(v) {
     const box = document.getElementById('teacher-view');
     box.innerHTML = "Loading...";
@@ -374,14 +620,17 @@ function viewTeacher(v) {
         db.collection("students").where("studentId", "!=", TEACHER_ID).get().then(snap => {
             let studentsList = [];
             snap.forEach(doc => studentsList.push(doc.data()));
-            // เรียงตามเลขที่ก่อน
             studentsList.sort((a,b) => (parseInt(a.number)||0) - (parseInt(b.number)||0));
             
             const header = `<tr><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>LV</th><th>EXP</th><th>MP</th><th>Action</th></tr>`;
             const renderRow = (s) => `<tr>
                 <td>
                     <select class="edit-input" style="width:80px;" id="r_${s.studentId}">
-                        <option value="London" ${s.room==='London'?'selected':''}>London</option><option value="Newyork" ${s.room==='Newyork'?'selected':''}>Newyork</option><option value="Tokyo" ${s.room==='Tokyo'?'selected':''}>Tokyo</option><option value="Paris" ${s.room==='Paris'?'selected':''}>Paris</option><option value="Seoul" ${s.room==='Seoul'?'selected':''}>Seoul</option>
+                        <option value="London" ${s.room==='London'?'selected':''}>London</option>
+                        <option value="Newyork" ${s.room==='Newyork'?'selected':''}>Newyork</option>
+                        <option value="Tokyo" ${s.room==='Tokyo'?'selected':''}>Tokyo</option>
+                        <option value="Paris" ${s.room==='Paris'?'selected':''}>Paris</option>
+                        <option value="Seoul" ${s.room==='Seoul'?'selected':''}>Seoul</option>
                         <option value="${s.room}" ${!ROOMS_LIST.includes(s.room)?'selected':''} style="display:${!ROOMS_LIST.includes(s.room)?'block':'none'}">${s.room}</option>
                     </select>
                 </td>
@@ -392,12 +641,16 @@ function viewTeacher(v) {
                 <td><input type="number" class="edit-input" style="width:60px;" id="exp_${s.studentId}" value="${s.exp||0}"></td>
                 <td><input type="number" class="edit-input" style="width:60px;" id="mp_${s.studentId}" value="${s.mana||0}"></td>
                 <td>
-                    <button class="btn-p" style="padding:8px 10px; font-size:10px;" onclick="saveStudentProfile('${s.studentId}')">บันทึก</button>
-                    <button class="btn-p btn-danger" style="padding:8px 10px; font-size:10px; border-color:var(--p-green); color:var(--p-green);" onclick="teacherAddExp('${s.studentId}', ${s.exp||0}, ${s.level||1}, ${s.mana||0})">+50 EXP</button>
+                    <button class="btn-p" style="padding:8px; font-size:10px;" onclick="saveStudentProfile('${s.studentId}')">บันทึก</button>
+                    <button class="btn-p btn-danger" style="padding:8px; font-size:10px; border-color:var(--p-green); color:var(--p-green);" onclick="teacherAddExp('${s.studentId}', ${s.exp||0}, ${s.level||1}, ${s.mana||0})">+50 EXP</button>
+                    <button class="btn-p btn-danger" style="padding:8px; font-size:10px;" onclick="deleteStudent('${s.studentId}', '${s.name}')"><i class="fa-solid fa-trash"></i> ลบ</button>
                 </td>
             </tr>`;
             
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#ffcc00;">แก้ไขโปรไฟล์ & ค่าพลังนักเรียน</h3>` + generateGroupedTables(studentsList, renderRow, header);
+            box.innerHTML = `<div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:15px; border:1px dashed #888;">
+                <p style="font-size:12px; margin:0; color:#aaa;">💡 <b>การเพิ่มนักเรียน:</b> แนะนำให้ไปที่หน้า Login แล้วกด "สร้างตัวละครใหม่" จะปลอดภัยต่อระบบมากที่สุดครับ</p>
+            </div>
+            <h3 class="pixel-font" style="font-size:12px; color:#ffcc00;">แก้ไขโปรไฟล์ & จัดการนักเรียน</h3>` + generateGroupedTables(studentsList, renderRow, header);
         });
     }
     else if (v === 'online') {
@@ -420,7 +673,6 @@ function viewTeacher(v) {
                 let timeStr = s.lastActive ? s.lastActive.toDate().toLocaleTimeString('th-TH') : 'ไม่มีข้อมูล';
                 return `<tr><td>${statusIcon}</td><td>${s.number||'-'}</td><td>${s.studentId}</td><td>${s.name}</td><td>${timeStr}</td></tr>`;
             };
-
             box.innerHTML = `<div style="background:rgba(0,255,65,0.1); padding:20px; border-radius:10px; border:1px solid #00ff41;"><h3 class="pixel-font" style="font-size:12px; color:#00ff41;">เรดาร์ตรวจสอบการออนไลน์ (อัปเดตทุก 1 นาที)</h3>${generateGroupedTables(studentsList, renderRow, header)}</div>`;
         });
     }
@@ -480,13 +732,12 @@ function viewTeacher(v) {
             box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#ff33cc;">สถานะการส่งงาน & คืนงานให้นักเรียน</h3>` + generateGroupedTables(studentsList, renderRow, header);
         });
     }
-    // ... ส่วนประกาศ บทเรียน ข้อสอบไขคดี เปิดปิดเควส ยังคงเหมือนเดิม
     else if (v === 'announcements') {
         let annHTML = "";
         announcements.forEach((a, i) => {
             annHTML += `<div style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:15px; margin-bottom:10px; display:flex; gap:10px; align-items:center;">
                 <input type="text" id="ann_edit_${i}" value="${a}" style="flex:1; margin:0;">
-                <button class="btn-p" style="padding:10px; font-size:10px;" onclick="editAnnounce(${i})"><i class="fa-solid fa-save"></i></button>
+                <button class="btn-p" style="padding:10px; font-size:10px;" onclick="editAnnounce(${i})"><i class="fa-solid fa-save"></i> บันทึก</button>
                 <button class="btn-p btn-danger" style="padding:10px;" onclick="delAnnounce(${i})"><i class="fa-solid fa-trash"></i></button>
             </div>`;
         });
@@ -507,10 +758,18 @@ function viewTeacher(v) {
             box.innerHTML = `<h3 class="pixel-font" style="font-size:12px;">กล่องข้อความจากนักเรียน</h3><div style="display:flex; gap:20px;"><div style="flex:1; max-height:400px; overflow-y:auto;">${listHTML||'<p>ยังไม่มีข้อความ</p>'}</div><div style="flex:2; background:#000; border-radius:10px; padding:20px; display:flex; flex-direction:column; height:400px;" id="t-chat-window">คลิกที่ชื่อนักเรียนเพื่อเริ่มแชท</div></div>`;
         });
     }
-    else if(v === 'lessons') { box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการสื่อการสอน (Lessons)</h3><select id="t-lesson-unit" onchange="loadLessonEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="lesson-editor-area"></div></div>`; }
-    else if(v === 'quizzes') { box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการข้อสอบ Boss Fight</h3><select id="t-quiz-unit" onchange="loadEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="editor-area"></div></div>`; }
+    else if(v === 'lessons') {
+        box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการสื่อการสอน (Lessons)</h3><select id="t-lesson-unit" onchange="loadLessonEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="lesson-editor-area"></div></div>`;
+    }
+    else if(v === 'quizzes') {
+        box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการข้อสอบ Boss Fight</h3><select id="t-quiz-unit" onchange="loadEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="editor-area"></div></div>`;
+    }
     else if(v === 'detective') {
-        let toggleBtns = ""; for(let i=0; i<10; i++) { let isOpen = caseStatus.cluesToggle[i]; toggleBtns += `<button class="btn-p" style="font-size:9px; background:${isOpen?'var(--aqua)':'#444'}; color:${isOpen?'#000':'#fff'};" onclick="toggleClue(${i})">คำใบ้ ${i+1}</button>`; }
+        let toggleBtns = "";
+        for(let i=0; i<10; i++) {
+            let isOpen = caseStatus.cluesToggle[i];
+            toggleBtns += `<button class="btn-p" style="font-size:9px; background:${isOpen?'var(--aqua)':'#444'}; color:${isOpen?'#000':'#fff'};" onclick="toggleClue(${i})">คำใบ้ ${i+1}</button>`;
+        }
         let caseOptions = CASES_DB.map((c, i) => `<option value="${i}" ${caseStatus.activeCaseId === i ? 'selected' : ''}>${c.title}</option>`).join('');
         box.innerHTML = `<div style="background:rgba(179,102,255,0.1); border:1px solid var(--detective-purple); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--detective-purple);">ควบคุมแฟ้มคดีสืบสวน</h3><label style="font-size:12px;">เลือกคดีให้เด็กเล่น</label><select onchange="changeActiveCase(this.value)" style="background:#000;">${caseOptions}</select><hr style="border-color:#444; margin:20px 0;"><p style="font-size:12px;">กดปุ่มเพื่อโชว์/ซ่อนคำใบ้</p><div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;">${toggleBtns}</div><button class="btn-p" style="width:100%; background:${caseStatus.isRevealed?'var(--alert-red)':'var(--detective-purple)'};" onclick="toggleSetting('monthly_case', 'isRevealed')">${caseStatus.isRevealed ? 'ปิดการเฉลย' : '📢 กดปุ่มประกาศเฉลยให้เด็กเห็น'}</button></div>`;
     }
@@ -519,43 +778,38 @@ function viewTeacher(v) {
     }
 }
 
-// --- Support Functions (Upload, Quizzes, Edits) ---
-function buyItem(id, cost) {
-    if(!confirm("ยืนยันการซื้อไอเทมนี้ด้วย " + cost + " MP?")) return;
-    let inv = userData.inventory || []; inv.push(id);
-    db.collection("students").doc(userData.studentId).update({ mana: userData.mana - cost, inventory: inv }).then(() => { alert("ซื้อสำเร็จ!"); showPage('shop', document.querySelectorAll('.nav-btn')[4]); });
+// Teacher Helpers
+function returnWork(studentId, missionId, studentName) {
+    if(!confirm(`ต้องการคืนงาน ${missionId} ให้ ${studentName} ใช่หรือไม่? (สถานะจะเปลี่ยนเป็นตรวจแล้ว/ส่งคืนแล้ว)`)) return;
+    db.collection("students").doc(studentId).get().then(doc => {
+        let s = doc.data(); let sm = s.submittedMissions || []; let rm = s.returnedMissions || [];
+        let index = sm.indexOf(missionId);
+        if (index > -1) {
+            sm.splice(index, 1);
+            if (!rm.includes(missionId)) rm.push(missionId);
+            db.collection("students").doc(studentId).update({ submittedMissions: sm, returnedMissions: rm }).then(() => {
+                alert("เปลี่ยนสถานะเป็นส่งคืนแล้วสำเร็จ!"); viewTeacher('assignments');
+            });
+        }
+    });
 }
-function equipItem(id, type, val) {
-    let updateData = {}; if(type === 'title') updateData.equippedTitle = val; if(type === 'icon') updateData.equippedIcon = val; if(type === 'glow') updateData.equippedGlow = val; if(type === 'frame') updateData.equippedFrame = val;
-    db.collection("students").doc(userData.studentId).update(updateData).then(() => { alert("สวมใส่ไอเท็มแล้ว! ไปดูที่หน้า Character ได้เลย"); showPage('shop', document.querySelectorAll('.nav-btn')[4]); });
+function deleteStudent(id, name) {
+    if(confirm(`⚠️ คำเตือน: คุณต้องการลบข้อมูลของ ${name} (รหัส: ${id}) ใช่หรือไม่?\nข้อมูลเกรดและไอเท็มจะถูกลบทั้งหมด!`)) {
+        db.collection("students").doc(id).delete().then(() => {
+            alert("ลบข้อมูลนักเรียนสำเร็จ!"); viewTeacher('students');
+        }).catch(e => alert("เกิดข้อผิดพลาด: " + e.message));
+    }
 }
-function uploadDrive(inputId, missionId) {
-    const fileInput = document.getElementById(inputId); const file = fileInput.files[0];
-    if (!file) return alert("กรุณาเลือกไฟล์ก่อนส่งงานครับ!");
-    if (!GAS_URL || GAS_URL === "") return alert("ครูเบียร์ยังไม่ได้ตั้งค่า GAS_URL ในโค้ดครับ!");
-    const btn = event.target; const originalText = btn.innerText; btn.innerText = "⏳ กำลังอัปโหลด..."; btn.disabled = true;
-    const reader = new FileReader(); reader.readAsDataURL(file);
-    reader.onload = function() {
-        const base64Raw = reader.result; const payload = { file: base64Raw, filename: file.name, missionId: missionId, studentName: userData.name };
-        fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.text()).then(response => {
-            if (response === "Success") {
-                alert("✅ ส่งงานสำเร็จ! ไฟล์ถูกจัดเก็บลงโฟลเดอร์ " + missionId + " เรียบร้อย");
-                let sm = userData.submittedMissions || []; if (!sm.includes(missionId)) sm.push(missionId);
-                db.collection("students").doc(userData.studentId).update({ submittedMissions: sm }).then(() => { openQuestDetail(missionId.split('_')[0]); });
-            } else { alert("❌ เกิดข้อผิดพลาด: " + response); btn.innerText = originalText; btn.disabled = false; }
-        }).catch(err => { alert("❌ ไม่สามารถเชื่อมต่อกับ Server Google Drive ได้"); console.error(err); btn.innerText = originalText; btn.disabled = false; });
-    };
+function saveStudentProfile(id) {
+    const room = document.getElementById(`r_${id}`).value; const num = document.getElementById(`n_${id}`).value; const name = document.getElementById(`name_${id}`).value;
+    const lv = parseInt(document.getElementById(`lv_${id}`).value)||1; const exp = parseInt(document.getElementById(`exp_${id}`).value)||0; const mp = parseInt(document.getElementById(`mp_${id}`).value)||0;
+    db.collection("students").doc(id).update({ room: room, number: num, name: name, level: lv, exp: exp, mana: mp }).then(() => alert("อัปเดตข้อมูลสำเร็จ!"));
 }
-function addAnnounce() {
-    const text = document.getElementById('new-announce').value.trim(); if(!text) return;
-    let newAnn = [...announcements, text]; db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
-}
-function editAnnounce(idx) {
-    const newText = document.getElementById(`ann_edit_${idx}`).value.trim(); if (!newText) return;
-    let newAnn = [...announcements]; newAnn[idx] = newText; db.collection("settings").doc("announcements").set({list: newAnn}).then(() => alert('อัปเดตประกาศสำเร็จ!'));
-}
-function delAnnounce(idx) {
-    let newAnn = [...announcements]; newAnn.splice(idx, 1); db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
+function updateGrade(id) {
+    let s1 = parseFloat(document.getElementById(`s1_${id}`).value)||0; let s2 = parseFloat(document.getElementById(`s2_${id}`).value)||0; let s3 = parseFloat(document.getElementById(`s3_${id}`).value)||0; let mid = parseFloat(document.getElementById(`mid_${id}`).value)||0; let s4 = parseFloat(document.getElementById(`s4_${id}`).value)||0; let s5 = parseFloat(document.getElementById(`s5_${id}`).value)||0; let s6 = parseFloat(document.getElementById(`s6_${id}`).value)||0; let fin = parseFloat(document.getElementById(`fin_${id}`).value)||0;
+    let pre = s1+s2+s3; let post = s4+s5+s6; let total = pre+post+mid+fin;
+    document.getElementById(`pre_${id}`).innerText = pre; document.getElementById(`post_${id}`).innerText = post; document.getElementById(`tot_${id}`).innerText = total;
+    db.collection("students").doc(id).update({ scores: { s1:s1, s2:s2, s3:s3, mid:mid, s4:s4, s5:s5, s6:s6, final:fin } });
 }
 function loadLessonEditor(u) {
     const area = document.getElementById('lesson-editor-area'); if(!u) return area.innerHTML = ""; const items = lessonsData[u] || []; let html = ``;
