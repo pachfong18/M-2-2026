@@ -10,12 +10,21 @@
 }
 
 * { box-sizing: border-box; transition: all 0.3s ease; }
-@keyframes aquaFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+/* 🌟 แก้ไข: อนิเมชันพื้นหลังที่กินสเปคน้อยลง 🌟 */
+@keyframes bgScroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 100vw 100vh; }
+}
 
 body { 
     margin: 0; height: 100vh; display: flex; overflow: hidden;
-    background: linear-gradient(-45deg, #0d1117, #161b22, #002d2d, #051e24);
-    background-size: 400% 400%; animation: aquaFlow 12s ease infinite;
+    /* เปลี่ยนจาก Gradient เป็นรูปภาพหรือแพทเทิร์นน้ำ */
+    background-color: #050b14;
+    background-image: radial-gradient(circle at 50% 50%, rgba(0, 255, 255, 0.05) 0%, transparent 80%), url('https://www.transparenttextures.com/patterns/cubes.png'); /* ลองเปลี่ยน URL รูปภาพตรงนี้ */
+    background-size: cover; 
+    /* ใช้ animation เลื่อนภาพเบาๆ */
+    animation: bgScroll 60s linear infinite; 
     font-family: 'Sarabun', sans-serif; color: #f0f0f0;
 }
 
@@ -91,9 +100,9 @@ table.admin-table th { color: var(--aqua); background: rgba(0,0,0,0.5); }
 .glow-purple { color: #b366ff !important; text-shadow: 0 0 12px #b366ff; font-weight: bold; }
 
 .frame-neon { border: 3px solid var(--aqua) !important; box-shadow: 0 0 20px var(--aqua), inset 0 0 15px var(--aqua) !important; border-radius: 50%; }
-.frame-fire { border: 3px solid #ff3366 !important; box-shadow: 0 0 25px #ff3366, inset 0 0 15px #ff3366 !important; border-radius: 50%; animation: pulseFire 1s infinite alternate; }
+/* 🌟 แก้ไข: อนิเมชันไฟนรกให้กินสเปคน้อยลง 🌟 */
+.frame-fire { border: 3px solid #ff3366 !important; box-shadow: 0 0 20px #ff3366, inset 0 0 10px #ff3366 !important; border-radius: 50%; } 
 .frame-cyber { border: 3px dashed #ffcc00 !important; box-shadow: 0 0 15px #ffcc00 !important; border-radius: 10% !important; }
-@keyframes pulseFire { 0% { box-shadow: 0 0 10px #ff3366; } 100% { box-shadow: 0 0 30px #ff3366; } }
 
 .stats-box { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; text-align: center; }
 .stats-val { font-size: 24px; font-weight: bold; color: var(--aqua); font-family: 'Press Start 2P'; margin-top: 10px; display: block;}
