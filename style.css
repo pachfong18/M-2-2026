@@ -10,14 +10,47 @@
 }
 
 * { box-sizing: border-box; transition: all 0.3s ease; }
-@keyframes aquaFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+/* --- อนิเมชันน้ำไหลวน Aqua Fluid --- */
+@keyframes fluidSplash {
+    0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(0deg) scale(1); }
+    50% { border-radius: 50% 50% 30% 70% / 70% 50% 50% 30%; transform: rotate(180deg) scale(1.1); }
+    100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(360deg) scale(1); }
+}
 
 body { 
     margin: 0; height: 100vh; display: flex; overflow: hidden;
-    background: linear-gradient(-45deg, #0d1117, #161b22, #002d2d, #051e24);
-    background-size: 400% 400%; animation: aquaFlow 12s ease infinite;
+    background-color: #050b14; /* สีพื้นหลังหลักที่ลึกขึ้น */
     font-family: 'Sarabun', sans-serif; color: #f0f0f0;
+    position: relative;
+    z-index: 1;
 }
+
+/* ก้อนน้ำไหลวน ก้อนที่ 1 (อควา-ฟ้า) */
+body::before {
+    content: "";
+    position: absolute;
+    width: 120vw; height: 120vw;
+    top: -30vh; left: -20vw;
+    background: linear-gradient(45deg, #00ffff 0%, #0055ff 50%, #00ffaa 100%);
+    animation: fluidSplash 25s linear infinite;
+    opacity: 0.15; /* ปรับความสว่างของน้ำตรงนี้ (0.1 - 1.0) */
+    z-index: -1; /* ผลักไปอยู่หลังสุด */
+    filter: blur(60px); /* เบลอให้ฟุ้งเนียนตา */
+}
+
+/* ก้อนน้ำไหลวน ก้อนที่ 2 (เขียว-น้ำเงิน) */
+body::after {
+    content: "";
+    position: absolute;
+    width: 100vw; height: 100vw;
+    bottom: -20vh; right: -20vw;
+    background: linear-gradient(135deg, #00ffaa 0%, #002244 50%, #00ffff 100%);
+    animation: fluidSplash 20s linear infinite reverse;
+    opacity: 0.15;
+    z-index: -1;
+    filter: blur(80px);
+}
+/* ----------------------------------- */
 
 .pixel-font { font-family: 'Press Start 2P', cursive; text-transform: uppercase; }
 
