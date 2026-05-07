@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Srisuvit Quest - Ultimate LMS v7.0</title>
+    <title>Srisuvit Quest - Ultimate LMS v7.5</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,7 +19,7 @@
     <nav class="sidebar">
         <div class="sidebar-header">
             <div class="logo-glow"><i class="fa-solid fa-ghost"></i></div>
-            <h1 class="pixel-font">Srisuvit<br>Quest v7.0</h1>
+            <h1 class="pixel-font">Srisuvit<br>Quest v7.5</h1>
         </div>
         
         <div id="menu-items" class="hidden">
@@ -57,11 +57,7 @@
                 <div style="display:flex; gap:10px;">
                     <select id="regRoom" style="flex:2;">
                         <option value="">-- เลือกห้อง --</option>
-                        <option value="London">London</option>
-                        <option value="Newyork">Newyork</option>
-                        <option value="Tokyo">Tokyo</option>
-                        <option value="Paris">Paris</option>
-                        <option value="Seoul">Seoul</option>
+                        <option value="London">London</option><option value="Newyork">Newyork</option><option value="Tokyo">Tokyo</option><option value="Paris">Paris</option><option value="Seoul">Seoul</option>
                     </select>
                     <input type="number" id="regNumber" placeholder="เลขที่" style="flex:1;">
                 </div>
@@ -79,10 +75,9 @@
     <div id="chat-widget" class="hidden">
         <div class="chat-header pixel-font">
             <span style="color:var(--aqua);"><i class="fa-solid fa-chalkboard-user"></i> แชทกับครูเบียร์</span>
-            <span style="float:right; cursor:pointer; font-size:16px; color:#fff;" onclick="toggleChatWidget()"><i class="fa-solid fa-chevron-down"></i></span>
+            <span style="float:right; cursor:pointer;" onclick="toggleChatWidget()"><i class="fa-solid fa-chevron-down"></i></span>
         </div>
-        <div id="chat-history">
-            </div>
+        <div id="chat-history"></div>
         <div class="chat-input-area">
             <input type="text" id="chat-input" placeholder="พิมพ์ข้อความถึงครูเบียร์..." onkeypress="handleChatEnter(event)">
             <button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
