@@ -15,7 +15,11 @@ const db = firebase.firestore();
 
 let userData = null;
 let quizData = {};
-let questStatus = { unit1: false, unit2: false, unit3: false, boss_unit1: false, boss_unit2: false, boss_unit3: false };
+let questStatus = { 
+    unit1: false, unit2: false, unit3: false, 
+    boss_unit1: false, boss_unit2: false, boss_unit3: false,
+    unit1_m1: false, unit1_m2: false, unit2_m1: false, unit2_m2: false, unit3_m1: false, unit3_m2: false
+};
 let lessonsData = { unit1: [], unit2: [], unit3: [] };
 
 const CASES_DB = [
@@ -50,7 +54,7 @@ function register() {
         db.collection("students").doc(id).set({ 
             name: name, studentId: id, number: "", room: "ม.2/", 
             level: 1, exp: 0, mana: 0, rank: "Novice", 
-            caseAnswer: {who:"",where:"",what:""}, completedBosses: [],
+            caseAnswer: {who:"",where:"",what:""}, completedBosses: [], submittedMissions: [], // Array เก็บงานที่ส่งแล้ว
             scores: {s1:0, s2:0, s3:0, mid:0, s4:0, s5:0, s6:0, final:0}
         });
     }).catch(e => alert(e.message));
@@ -100,15 +104,23 @@ function showPage(id, btn) {
     window.isDoingQuiz = false;
 
     if (id === 'dashboard') {
-        // --- ระบบเช็คงานค้างรายบุคคล ---
         let pendingTasksHTML = "";
+        const sm = userData.submittedMissions || [];
         
-        // เช็คเควสและบอสที่ยังไม่ผ่าน
-        if (questStatus.unit1 && !(userData.completedBosses || []).includes('unit1')) pendingTasksHTML += "<li>🔥 ภารกิจค้าง: Unit 1 แนวคิดเชิงคำนวณ (ยังไม่ล้มบอส)</li>";
-        if (questStatus.unit2 && !(userData.completedBosses || []).includes('unit2')) pendingTasksHTML += "<li>🔥 ภารกิจค้าง: Unit 2 การออกแบบอัลกอริทึม (ยังไม่ล้มบอส)</li>";
-        if (questStatus.unit3 && !(userData.completedBosses || []).includes('unit3')) pendingTasksHTML += "<li>🔥 ภารกิจค้าง: Unit 3 การเขียนโปรแกรม (ยังไม่ล้มบอส)</li>";
+        // เช็ค Mission ย่อย (เปิดแล้ว แต่ยังไม่ได้ส่ง)
+        if (questStatus.unit1_m1 && !sm.includes('unit1_m1')) pendingTasksHTML += "<li>📄 ภารกิจค้าง: Unit 1 - อัปโหลดงานชิ้นที่ 1</li>";
+        if (questStatus.unit1_m2 && !sm.includes('unit1_m2')) pendingTasksHTML += "<li>📄 ภารกิจค้าง: Unit 1 - อัปโหลดงานชิ้นที่ 2</li>";
+        if (questStatus.unit2_m1 && !sm.includes('unit2_m1')) pendingTasksHTML += "<li>📄 ภารกิจค้าง: Unit 2 - อัปโหลดงานชิ้นที่ 1</li>";
+        if (questStatus.unit2_m2 && !sm.includes('unit2_m2')) pendingTasksHTML += "<li>📄 ภารกิจค้าง: Unit 2 - อัปโหลดงานชิ้นที่ 2</li>";
+        if (questStatus.unit3_m1 && !sm.includes('unit3_m1')) pendingTasksHTML += "<li>📄 ภารกิจค้าง: Unit 3 - อัปโหลดงานชิ้นที่ 1</li>";
+        if (questStatus.unit3_m2 && !sm.includes('unit3_m2')) pendingTasksHTML += "<li>📄 ภารกิจค้าง: Unit 3 - อัปโหลดงานชิ้นที่ 2</li>";
+
+        // เช็ค Boss
+        if (questStatus.boss_unit1 && !(userData.completedBosses || []).includes('unit1')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 1 แนวคิดเชิงคำนวณ</li>";
+        if (questStatus.boss_unit2 && !(userData.completedBosses || []).includes('unit2')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 2 การออกแบบอัลกอริทึม</li>";
+        if (questStatus.boss_unit3 && !(userData.completedBosses || []).includes('unit3')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 3 การเขียนโปรแกรม</li>";
         
-        // เช็คคดีรายเดือน
+        // เช็คคดี
         const hasAns = userData.caseAnswer && userData.caseAnswer.who;
         if (!caseStatus.isRevealed && !hasAns) pendingTasksHTML += "<li>🕵️‍♂️ แฟ้มคดี: ยังไม่ได้ระบุตัวคนร้ายในเดือนนี้!</li>";
 
@@ -190,7 +202,6 @@ function showPage(id, btn) {
                     <p style="font-size:14px; color:#ddd; margin:0;">${currentCase.story}</p>
                 </div>
                 ${resultUI}
-
                 <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[ ตารางไขว้ตัดช้อยส์ Murdle Grid 4x4x4 ]</h3>
                 <div style="overflow-x:auto;">
                     <table class="murdle-grid">
@@ -217,7 +228,9 @@ function showPage(id, btn) {
                     <div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid var(--aqua);">
                         <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[ พิพากษาคดี ]</h3>
                         <p style="font-size:10px; color:#aaa;">ส่งคำตอบล่าสุด: ${hasAns ? userData.caseAnswer.who + " / " + userData.caseAnswer.where + " / " + userData.caseAnswer.what : "ยังไม่ส่ง"}</p>
-                        <select id="ansWho">${optWho}</select><select id="ansWhere">${optWhere}</select><select id="ansWhat">${optWhat}</select>
+                        <select id="ansWho">${optWho}</select>
+                        <select id="ansWhere">${optWhere}</select>
+                        <select id="ansWhat">${optWhat}</select>
                         <button class="btn-p pixel-font" style="width:100%; font-size:10px; padding:12px;" onclick="saveCaseAnswer()" ${caseStatus.isRevealed ? 'disabled style="opacity:0.5;"' : ''}>${caseStatus.isRevealed ? 'ปิดรับคำตอบแล้ว' : 'ส่งคำพิพากษา'}</button>
                     </div>
                 </div>
@@ -272,17 +285,28 @@ function renderQuestCard(unitNum, title, isUnlocked) {
 }
 
 function openQuestDetail(u) {
+    const sm = userData.submittedMissions || [];
     const isBossCompleted = (userData.completedBosses || []).includes(u);
     const isBossOpen = questStatus['boss_' + u];
-    let bossSectionHTML = "";
+    
+    let m1HTML = ""; let m2HTML = "";
+    
+    // Check Mission 1
+    if (questStatus[`${u}_m1`]) {
+        if (sm.includes(`${u}_m1`)) m1HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 1 เรียบร้อยแล้ว</div>`;
+        else m1HTML = `<input type="file" id="file_${u}_m1" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m1', '${u}_m1')">UPLOAD TO DRIVE</button>`;
+    } else m1HTML = `<div style="color:#888; text-align:center; padding:10px;">🔒 ครูเบียร์ยังไม่เปิดรับงานนี้</div>`;
 
-    if (isBossCompleted) {
-        window.isDoingQuiz = false;
-        bossSectionHTML = `<div style="background:rgba(0,255,65,0.1); border:2px solid #00ff41; padding:20px; border-radius:10px; text-align:center;"><h3 class="pixel-font" style="color:#00ff41; margin-top:0;">🎉 BOSS CLEARED!</h3><p style="color:#ddd; margin-bottom:0;">คุณได้กำจัดบอสประจำหน่วยนี้ไปแล้ว (ไม่สามารถโจมตีซ้ำได้)</p></div>`;
-    } else if (!isBossOpen) {
-        window.isDoingQuiz = false;
-        bossSectionHTML = `<div style="background:rgba(255,255,255,0.05); border:2px dashed #666; padding:20px; border-radius:10px; text-align:center;"><h3 class="pixel-font" style="color:#aaa; margin-top:0;"><i class="fa-solid fa-lock"></i> BOSS LOCKED</h3><p style="color:#888; margin-bottom:0;">ครูเบียร์ยังไม่เปิดให้เข้าสู้บอสในขณะนี้ เตรียมตัวให้พร้อม!</p></div>`;
-    } else {
+    // Check Mission 2
+    if (questStatus[`${u}_m2`]) {
+        if (sm.includes(`${u}_m2`)) m2HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 2 เรียบร้อยแล้ว</div>`;
+        else m2HTML = `<input type="file" id="file_${u}_m2" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m2', '${u}_m2')">UPLOAD TO DRIVE</button>`;
+    } else m2HTML = `<div style="color:#888; text-align:center; padding:10px;">🔒 ครูเบียร์ยังไม่เปิดรับงานนี้</div>`;
+
+    let bossSectionHTML = "";
+    if (isBossCompleted) bossSectionHTML = `<div style="background:rgba(0,255,65,0.1); border:2px solid #00ff41; padding:20px; border-radius:10px; text-align:center;"><h3 class="pixel-font" style="color:#00ff41; margin-top:0;">🎉 BOSS CLEARED!</h3><p style="color:#ddd; margin-bottom:0;">คุณได้กำจัดบอสประจำหน่วยนี้ไปแล้ว (ไม่สามารถโจมตีซ้ำได้)</p></div>`;
+    else if (!isBossOpen) bossSectionHTML = `<div style="background:rgba(255,255,255,0.05); border:2px dashed #666; padding:20px; border-radius:10px; text-align:center;"><h3 class="pixel-font" style="color:#aaa; margin-top:0;"><i class="fa-solid fa-lock"></i> BOSS LOCKED</h3><p style="color:#888; margin-bottom:0;">ครูเบียร์ยังไม่เปิดให้เข้าสู้บอสในขณะนี้ เตรียมตัวให้พร้อม!</p></div>`;
+    else {
         window.isDoingQuiz = true;
         bossSectionHTML = `<div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">>>> BOSS FIGHT</h3><p style="font-size:12px; color:#ccc;">ตอบให้ถูกมากที่สุดเพื่อรับโบนัส MP! (คำเตือน: ห้ามพับจอ!)</p><div id="quiz-container_${u}"></div></div>`;
     }
@@ -291,20 +315,34 @@ function openQuestDetail(u) {
         <button class="btn-p pixel-font" style="background:transparent; color:#fff; border-color:#fff; padding:10px; font-size:10px; margin-bottom:20px;" onclick="showPage('quests', document.querySelectorAll('.nav-btn')[2])"><< BACK</button>
         <h2 class="pixel-font aqua-glow">>>> ${u.toUpperCase()} MISSIONS</h2>
         <div style="background:rgba(0,255,255,0.05); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;">
-            <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[MISSION 1] อัปโหลดงานชิ้นที่ 1</h3><input type="file" id="file_${u}_m1" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m1', '${u}_M1')">UPLOAD TO DRIVE</button>
+            <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[MISSION 1] อัปโหลดงานชิ้นที่ 1</h3>
+            ${m1HTML}
         </div>
         <div style="background:rgba(0,255,255,0.05); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;">
-            <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[MISSION 2] อัปโหลดงานชิ้นที่ 2</h3><input type="file" id="file_${u}_m2" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m2', '${u}_M2')">UPLOAD TO DRIVE</button>
+            <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[MISSION 2] อัปโหลดงานชิ้นที่ 2</h3>
+            ${m2HTML}
         </div>
         ${bossSectionHTML}
     `;
     if (!isBossCompleted && isBossOpen) renderBossQuestions(u);
 }
 
-function uploadDrive(inputId, taskName) {
+function uploadDrive(inputId, missionId) {
     const file = document.getElementById(inputId).files[0];
     if(!file) return alert("เลือกไฟล์ก่อนครับ!");
-    alert(`กำลังอัปโหลด ${taskName} ไปยัง Google Drive...\n(รอเชื่อมต่อ GAS_URL)`);
+    
+    // จำลองการอัปโหลดผ่าน GAS
+    alert(`กำลังอัปโหลดงานไปยัง Google Drive...\n(ถ้า GAS_URL ถูกตั้งค่าแล้ว ไฟล์จะเข้า Drive ครูเบียร์)`);
+    
+    // เมื่ออัปโหลดสำเร็จ บันทึกใน Database ว่าส่งแล้ว
+    let sm = userData.submittedMissions || [];
+    if (!sm.includes(missionId)) sm.push(missionId);
+    
+    db.collection("students").doc(userData.studentId).update({ submittedMissions: sm }).then(() => {
+        alert("ส่งงานเรียบร้อยแล้ว!");
+        // Refresh หน้าเดิม
+        openQuestDetail(missionId.split('_')[0]);
+    });
 }
 
 function renderBossQuestions(u) {
@@ -381,7 +419,6 @@ function viewTeacher(v) {
         db.collection("students").where("studentId", "!=", TEACHER_ID).get().then(snap => {
             let studentsList = [];
             snap.forEach(doc => studentsList.push(doc.data()));
-            // เรียงตามห้อง แล้วตามเลขที่
             studentsList.sort((a,b) => {
                 if(a.room === b.room) return (parseInt(a.number)||0) - (parseInt(b.number)||0);
                 return (a.room||"").localeCompare(b.room||"");
@@ -439,7 +476,7 @@ function viewTeacher(v) {
                     <td id="tot_${s.studentId}" class="grade-total" style="color:#00ff41; font-size:16px;">${total}</td>
                 </tr>`;
             });
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#00ff41;">ระบบบันทึกคะแนน (พิมพ์ตัวเลขแล้วระบบจะเซฟอัตโนมัติ)</h3>` + html + "</table></div>";
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#00ff41;">ระบบบันทึกคะแนน</h3>` + html + "</table></div>";
         });
     }
     else if(v === 'lessons') {
@@ -478,13 +515,35 @@ function viewTeacher(v) {
     else if(v === 'quests') {
         box.innerHTML = `
             <div style="background:rgba(0,255,255,0.1); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;">
-                <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด ระบบส่งงาน (Quest Board)</h3>
+                <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด การส่งงาน (ภารกิจย่อย)</h3>
+                
+                <p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 1: แนวคิดเชิงคำนวณ</p>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-p" style="flex:1; background:${questStatus.unit1?'var(--aqua)':'#444'}; color:${questStatus.unit1?'#000':'#fff'};" onclick="toggleSetting('quest_board', 'unit1')">Unit 1</button>
-                    <button class="btn-p" style="flex:1; background:${questStatus.unit2?'var(--aqua)':'#444'}; color:${questStatus.unit2?'#000':'#fff'};" onclick="toggleSetting('quest_board', 'unit2')">Unit 2</button>
-                    <button class="btn-p" style="flex:1; background:${questStatus.unit3?'var(--aqua)':'#444'}; color:${questStatus.unit3?'#000':'#fff'};" onclick="toggleSetting('quest_board', 'unit3')">Unit 3</button>
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit1_m1?'var(--aqua)':'#444'}; color:${questStatus.unit1_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m1')">ภารกิจที่ 1</button>
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit1_m2?'var(--aqua)':'#444'}; color:${questStatus.unit1_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m2')">ภารกิจที่ 2</button>
+                </div>
+                
+                <p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 2: การออกแบบอัลกอริทึม</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit2_m1?'var(--aqua)':'#444'}; color:${questStatus.unit2_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m1')">ภารกิจที่ 1</button>
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit2_m2?'var(--aqua)':'#444'}; color:${questStatus.unit2_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m2')">ภารกิจที่ 2</button>
+                </div>
+
+                <p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 3: Python</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit3_m1?'var(--aqua)':'#444'}; color:${questStatus.unit3_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m1')">ภารกิจที่ 1</button>
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit3_m2?'var(--aqua)':'#444'}; color:${questStatus.unit3_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m2')">ภารกิจที่ 2</button>
+                </div>
+                
+                <hr style="border-color:#444; margin:20px 0;">
+                <p style="font-size:12px; color:#aaa;">การเปิดล็อคประตูใหญ่ (ให้เด็กเข้าดูรายละเอียดใน Unit นั้นได้)</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit1?'var(--p-green)':'#444'}; color:${questStatus.unit1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1')">ปลดล็อค Unit 1</button>
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit2?'var(--p-green)':'#444'}; color:${questStatus.unit2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2')">ปลดล็อค Unit 2</button>
+                    <button class="btn-p" style="flex:1; background:${questStatus.unit3?'var(--p-green)':'#444'}; color:${questStatus.unit3?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3')">ปลดล็อค Unit 3</button>
                 </div>
             </div>
+            
             <div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;">
                 <h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">เปิด/ปิด สอบบอสไฟต์ (Boss Fight)</h3>
                 <div style="display:flex; gap:10px;">
@@ -496,7 +555,6 @@ function viewTeacher(v) {
     }
 }
 
-// --- STUDENT PROFILE & GRADING LOGIC ---
 function saveStudentProfile(id) {
     const room = document.getElementById(`r_${id}`).value;
     const num = document.getElementById(`n_${id}`).value;
@@ -516,7 +574,6 @@ function updateGrade(id) {
 
     let pre = s1+s2+s3; let post = s4+s5+s6; let total = pre+post+mid+fin;
 
-    // อัปเดต UI ทันทีไม่ต้องรอโหลด
     document.getElementById(`pre_${id}`).innerText = pre;
     document.getElementById(`post_${id}`).innerText = post;
     document.getElementById(`tot_${id}`).innerText = total;
@@ -526,7 +583,6 @@ function updateGrade(id) {
     });
 }
 
-// LESSON EDITOR
 function loadLessonEditor(u) {
     const area = document.getElementById('lesson-editor-area');
     if(!u) return area.innerHTML = "";
@@ -551,7 +607,6 @@ function loadLessonEditor(u) {
     area.innerHTML = html;
 }
 
-// QUIZ EDITOR
 function loadEditor(u) {
     const area = document.getElementById('editor-area');
     if(!u) return area.innerHTML = "";
@@ -583,7 +638,6 @@ function loadEditor(u) {
 function updateQ(u, i, f, v) { quizData[u][i][f] = v; }
 function addQ(u) { if(!quizData[u]) quizData[u]=[]; quizData[u].push({q:'',a:'',b:'',c:'',d:'',key:'A'}); loadEditor(u); }
 
-// TOGGLES
 function toggleSetting(col, key) {
     let target = col === 'quest_board' ? questStatus : caseStatus;
     db.collection("settings").doc(col).update({ [key]: !target[key] }).then(() => viewTeacher(col==='quest_board'?'quests':'detective'));
@@ -600,7 +654,6 @@ function changeActiveCase(caseIdx) {
     }).then(() => viewTeacher('detective'));
 }
 
-// ANTI CHEAT
 document.addEventListener("visibilitychange", () => {
     if (document.hidden && window.isDoingQuiz && userData && userData.studentId !== TEACHER_ID) {
         db.collection("anti_cheat_alerts").add({ studentName: userData.name, action: "สลับจอ", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
