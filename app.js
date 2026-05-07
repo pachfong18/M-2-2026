@@ -1,4 +1,11 @@
+// ==========================================
+// 🚨 ตั้งค่า URL จาก Google Apps Script ที่นี่ 🚨
+// ==========================================
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyi81vO2m34G4tS7_6S9Ld6uNq7D5N4FqZ6g3VzNq4/exec";
+
+// ==========================================
+// 🚨 ตั้งค่า Firebase Config ของครูเบียร์ 🚨
+// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyB8TZrULjTqu7hWphMrkiQHPydGriZcnoc",
     authDomain: "cs-classroom-web.firebaseapp.com",
@@ -15,7 +22,8 @@ const db = firebase.firestore();
 
 let userData = null;
 let quizData = {};
-let questStatus = { unit1: false, unit2: false, unit3: false };
+// เพิ่มสถานะการเปิดปิด Boss
+let questStatus = { unit1: false, unit2: false, unit3: false, boss_unit1: false, boss_unit2: false, boss_unit3: false };
 let caseStatus = { w1:false, w2:false, w3:false, w4:false, isRevealed:false, ansWho:"นาย A", ansWhere:"ห้องเซิร์ฟเวอร์", ansWhat:"แฟลชไดรฟ์" };
 window.murdleState = {}; 
 const TEACHER_ID = "pchrkr007";
@@ -37,7 +45,12 @@ function register() {
     const pass = document.getElementById('regPass').value;
     if(pass.length < 6) return alert("รหัสผ่านต้องมีอย่างน้อย 6 ตัว");
     auth.createUserWithEmailAndPassword(id + "@srisuvit.com", pass).then(res => {
-        db.collection("students").doc(id).set({ name: name, studentId: id, level: 1, exp: 0, mana: 0, rank: "Novice", caseAnswer: {who:"",where:"",what:""} });
+        // เพิ่ม completedBosses เป็น Array ว่างสำหรับเด็กใหม่
+        db.collection("students").doc(id).set({ 
+            name: name, studentId: id, level: 1, exp: 0, mana: 0, rank: "Novice", 
+            caseAnswer: {who:"",where:"",what:""},
+            completedBosses: [] 
+        });
     }).catch(e => alert(e.message));
 }
 
@@ -134,45 +147,15 @@ function showPage(id, btn) {
             <h3 class="pixel-font" style="font-size:10px; color:var(--aqua);">[ ตารางตัดช้อยส์ Murdle Grid ]</h3>
             <div style="overflow-x:auto;">
                 <table class="murdle-grid">
-                    <tr>
-                        <th class="empty-cell"></th>
-                        <th colspan="3" class="header-group">สถานที่เกิดเหตุ (WHERE)</th>
-                        <th colspan="3" class="header-group">อุปกรณ์ที่ใช้ (WHAT)</th>
-                    </tr>
-                    <tr>
-                        <th style="background:#111;"></th>
-                        <th>เซิร์ฟเวอร์</th><th>ห้องครู</th><th>สวน</th>
-                        <th>แฟลชไดรฟ์</th><th>แล็ปท็อป</th><th>มือถือ</th>
-                    </tr>
-                    <tr>
-                        <th style="background:rgba(0,255,255,0.1);">นาย A</th>
-                        ${getCell(0,0)} ${getCell(0,1)} ${getCell(0,2)}
-                        ${getCell(0,3)} ${getCell(0,4)} ${getCell(0,5)}
-                    </tr>
-                    <tr>
-                        <th style="background:rgba(0,255,255,0.1);">นางสาว B</th>
-                        ${getCell(1,0)} ${getCell(1,1)} ${getCell(1,2)}
-                        ${getCell(1,3)} ${getCell(1,4)} ${getCell(1,5)}
-                    </tr>
-                    <tr>
-                        <th style="background:rgba(0,255,255,0.1);">เด็กชาย C</th>
-                        ${getCell(2,0)} ${getCell(2,1)} ${getCell(2,2)}
-                        ${getCell(2,3)} ${getCell(2,4)} ${getCell(2,5)}
-                    </tr>
+                    <tr><th class="empty-cell"></th><th colspan="3" class="header-group">สถานที่เกิดเหตุ (WHERE)</th><th colspan="3" class="header-group">อุปกรณ์ที่ใช้ (WHAT)</th></tr>
+                    <tr><th style="background:#111;"></th><th>เซิร์ฟเวอร์</th><th>ห้องครู</th><th>สวน</th><th>แฟลชไดรฟ์</th><th>แล็ปท็อป</th><th>มือถือ</th></tr>
+                    <tr><th style="background:rgba(0,255,255,0.1);">นาย A</th>${getCell(0,0)} ${getCell(0,1)} ${getCell(0,2)} ${getCell(0,3)} ${getCell(0,4)} ${getCell(0,5)}</tr>
+                    <tr><th style="background:rgba(0,255,255,0.1);">นางสาว B</th>${getCell(1,0)} ${getCell(1,1)} ${getCell(1,2)} ${getCell(1,3)} ${getCell(1,4)} ${getCell(1,5)}</tr>
+                    <tr><th style="background:rgba(0,255,255,0.1);">เด็กชาย C</th>${getCell(2,0)} ${getCell(2,1)} ${getCell(2,2)} ${getCell(2,3)} ${getCell(2,4)} ${getCell(2,5)}</tr>
                     <tr><td colspan="7" class="empty-cell" style="height:10px;"></td></tr>
-                    <tr>
-                        <th style="background:rgba(0,255,255,0.1);">แฟลชไดรฟ์</th>
-                        ${getCell(3,0)} ${getCell(3,1)} ${getCell(3,2)}
-                        <td colspan="3" rowspan="3" class="empty-cell"></td>
-                    </tr>
-                    <tr>
-                        <th style="background:rgba(0,255,255,0.1);">แล็ปท็อป</th>
-                        ${getCell(4,0)} ${getCell(4,1)} ${getCell(4,2)}
-                    </tr>
-                    <tr>
-                        <th style="background:rgba(0,255,255,0.1);">มือถือ</th>
-                        ${getCell(5,0)} ${getCell(5,1)} ${getCell(5,2)}
-                    </tr>
+                    <tr><th style="background:rgba(0,255,255,0.1);">แฟลชไดรฟ์</th>${getCell(3,0)} ${getCell(3,1)} ${getCell(3,2)}<td colspan="3" rowspan="3" class="empty-cell"></td></tr>
+                    <tr><th style="background:rgba(0,255,255,0.1);">แล็ปท็อป</th>${getCell(4,0)} ${getCell(4,1)} ${getCell(4,2)}</tr>
+                    <tr><th style="background:rgba(0,255,255,0.1);">มือถือ</th>${getCell(5,0)} ${getCell(5,1)} ${getCell(5,2)}</tr>
                 </table>
             </div>
 
@@ -235,7 +218,7 @@ function showPage(id, btn) {
                 <button class="btn-p pixel-font" style="background:#ffcc00; color:#000; font-size:9px;" onclick="viewTeacher('students')">นักเรียน</button>
                 <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('quizzes')">ข้อสอบ</button>
                 <button class="btn-p pixel-font" style="background:var(--detective-purple); color:#fff; font-size:9px;" onclick="viewTeacher('detective')">สืบสวน</button>
-                <button class="btn-p pixel-font" style="background:var(--p-green); color:#000; font-size:9px;" onclick="viewTeacher('quests')">เปิดปิด Quest</button>
+                <button class="btn-p pixel-font" style="background:var(--alert-red); color:#fff; font-size:9px; border-color:var(--alert-red);" onclick="viewTeacher('quests')">ระบบเนื้อหาและบอส</button>
             </div>
             <div id="teacher-view"></div>`;
         viewTeacher('students');
@@ -253,13 +236,42 @@ function renderQuestCard(unitNum, title, isUnlocked) {
     }
     return `<div class="content-card" style="min-height:auto; padding:30px; border-color:var(--aqua);">
         <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">Unit ${unitNum}: ${title}</h3>
-        <p style="font-size:12px; color:#ddd;">ส่งงาน 2 ชิ้น และทำแบบทดสอบเพื่อล้มบอส</p>
+        <p style="font-size:12px; color:#ddd;">ส่งงาน 2 ชิ้น และเตรียมตัวสู้บอส</p>
         <button class="btn-p pixel-font" style="width:100%; margin-top:10px; font-size:10px;" onclick="openQuestDetail('unit${unitNum}')">ENTER QUEST</button>
     </div>`;
 }
 
 function openQuestDetail(u) {
-    window.isDoingQuiz = true;
+    const isBossCompleted = userData.completedBosses && userData.completedBosses.includes(u);
+    const isBossOpen = questStatus['boss_' + u];
+
+    let bossSectionHTML = "";
+
+    // ระบบจัดการด่าน Boss Fight (ปิด/เปิด และ ห้ามทำซ้ำ)
+    if (isBossCompleted) {
+        window.isDoingQuiz = false;
+        bossSectionHTML = `
+            <div style="background:rgba(0,255,65,0.1); border:2px solid #00ff41; padding:20px; border-radius:10px; text-align:center; box-shadow:0 0 15px rgba(0,255,65,0.2);">
+                <h3 class="pixel-font" style="color:#00ff41; margin-top:0;">🎉 BOSS CLEARED!</h3>
+                <p style="color:#ddd; margin-bottom:0;">คุณได้กำจัดบอสประจำหน่วยนี้ไปแล้ว (ภารกิจสำเร็จ ไม่สามารถโจมตีซ้ำได้)</p>
+            </div>`;
+    } else if (!isBossOpen) {
+        window.isDoingQuiz = false;
+        bossSectionHTML = `
+            <div style="background:rgba(255,255,255,0.05); border:2px dashed #666; padding:20px; border-radius:10px; text-align:center;">
+                <h3 class="pixel-font" style="color:#aaa; margin-top:0;"><i class="fa-solid fa-lock"></i> BOSS LOCKED</h3>
+                <p style="color:#888; margin-bottom:0;">ครูเบียร์ยังไม่เปิดให้เข้าสู้บอสในขณะนี้ เตรียมตัวให้พร้อม!</p>
+            </div>`;
+    } else {
+        window.isDoingQuiz = true; // เปิด Anti-cheat
+        bossSectionHTML = `
+            <div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;">
+                <h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">>>> BOSS FIGHT</h3>
+                <p style="font-size:12px; color:#ccc;">ตอบให้ถูกมากที่สุดเพื่อรับโบนัส MP! (คำเตือน: ห้ามพับจอ!)</p>
+                <div id="quiz-container_${u}"></div>
+            </div>`;
+    }
+
     let html = `
         <button class="btn-p pixel-font" style="background:transparent; color:#fff; border-color:#fff; padding:10px; font-size:10px; margin-bottom:20px;" onclick="showPage('quests', document.querySelectorAll('.nav-btn')[1])"><< BACK</button>
         <h2 class="pixel-font aqua-glow">>>> ${u.toUpperCase()} MISSIONS</h2>
@@ -276,14 +288,15 @@ function openQuestDetail(u) {
             <button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m2', '${u}_M2')">UPLOAD TO DRIVE</button>
         </div>
 
-        <div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;">
-            <h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">>>> BOSS FIGHT</h3>
-            <p style="font-size:12px; color:#ccc;">ตอบให้ถูกมากที่สุดเพื่อรับโบนัส MP! (คำเตือน: ห้ามพับจอ!)</p>
-            <div id="quiz-container_${u}"></div>
-        </div>
+        ${bossSectionHTML}
     `;
+    
     document.getElementById('game-content').innerHTML = html;
-    renderBossQuestions(u);
+    
+    // ถ้าบอสเปิดอยู่ และยังไม่เคลียร์ ให้เรนเดอร์คำถาม
+    if (!isBossCompleted && isBossOpen) {
+        renderBossQuestions(u);
+    }
 }
 
 function uploadDrive(inputId, taskName) {
@@ -295,7 +308,7 @@ function uploadDrive(inputId, taskName) {
 function renderBossQuestions(u) {
     const container = document.getElementById(`quiz-container_${u}`);
     const qs = quizData[u] || [];
-    if(!qs.length) return container.innerHTML = "<p style='color:#aaa;'>ครูเบียร์ยังไม่ได้ลงข้อสอบครับ</p>";
+    if(!qs.length) return container.innerHTML = "<p style='color:#aaa;'>ครูเบียร์ยังไม่ได้ลงข้อสอบครับ รออัปเดต...</p>";
     
     let qHTML = "";
     qs.forEach((q, i) => {
@@ -312,18 +325,29 @@ function renderBossQuestions(u) {
 }
 
 function submitBoss(u) {
-    if(!confirm("ส่งคำตอบแล้วไม่สามารถแก้ไขได้ ยืนยันโจมตี?")) return;
+    if(!confirm("ส่งคำตอบแล้วไม่สามารถแก้ไขหรือทำซ้ำได้ ยืนยันโจมตี?")) return;
     window.isDoingQuiz = false;
+    
     const qs = quizData[u] || [];
     let score = 0;
     qs.forEach((q, i) => {
         const sel = document.querySelector(`input[name="q_${u}_${i}"]:checked`);
         if(sel && sel.value === q.key) score++;
     });
+    
     const mpGain = score * 5;
-    alert(`การต่อสู้จบลง! ตอบถูก ${score} ข้อ ได้รับ ${mpGain} MP`);
-    db.collection("students").doc(userData.studentId).update({ mana: userData.mana + mpGain });
-    showPage('quests', document.querySelectorAll('.nav-btn')[1]);
+    alert(`การต่อสู้จบลง! ตอบถูก ${score}/${qs.length} ข้อ ได้รับ ${mpGain} MP`);
+    
+    // บันทึกว่าผ่านด่านบอสแล้ว (ป้องกันการทำซ้ำ)
+    let completedArr = userData.completedBosses || [];
+    if (!completedArr.includes(u)) completedArr.push(u);
+
+    db.collection("students").doc(userData.studentId).update({ 
+        mana: userData.mana + mpGain,
+        completedBosses: completedArr
+    }).then(() => {
+        showPage('quests', document.querySelectorAll('.nav-btn')[1]);
+    });
 }
 
 // --- MURDLE HELPER ---
@@ -387,13 +411,24 @@ function viewTeacher(v) {
             </div>`;
     }
     else if(v === 'quests') {
+        // ส่วนควบคุมแยกกันระหว่าง การส่งงาน (Quest) และ ข้อสอบ (Boss Fight)
         box.innerHTML = `
-            <div style="background:rgba(0,255,255,0.1); border:1px solid var(--aqua); padding:20px; border-radius:10px;">
-                <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด Quest Board</h3>
+            <div style="background:rgba(0,255,255,0.1); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;">
+                <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด ระบบให้เข้าส่งงาน (Quest Board)</h3>
                 <div style="display:flex; gap:10px;">
                     <button class="btn-p" style="flex:1; background:${questStatus.unit1?'var(--aqua)':'#444'}; color:${questStatus.unit1?'#000':'#fff'};" onclick="toggleSetting('quest_board', 'unit1')">Unit 1</button>
                     <button class="btn-p" style="flex:1; background:${questStatus.unit2?'var(--aqua)':'#444'}; color:${questStatus.unit2?'#000':'#fff'};" onclick="toggleSetting('quest_board', 'unit2')">Unit 2</button>
                     <button class="btn-p" style="flex:1; background:${questStatus.unit3?'var(--aqua)':'#444'}; color:${questStatus.unit3?'#000':'#fff'};" onclick="toggleSetting('quest_board', 'unit3')">Unit 3</button>
+                </div>
+            </div>
+            
+            <div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;">
+                <h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">เปิด/ปิด ระบบให้ทำข้อสอบ (Boss Fight)</h3>
+                <p style="font-size:12px; color:#ccc;">ใช้สำหรับให้เด็กส่งงานไปก่อน แล้วค่อยเปิดให้ทำข้อสอบพร้อมกัน</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit1?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit1?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit1')">Boss 1</button>
+                    <button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit2?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit2?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit2')">Boss 2</button>
+                    <button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit3?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit3?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit3')">Boss 3</button>
                 </div>
             </div>`;
     }
@@ -429,7 +464,7 @@ function loadEditor(u) {
     });
     html += `<div style="display:flex; gap:10px; margin-top:20px;">
         <button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="addQ('${u}')">+ เพิ่มข้อใหม่</button>
-        <button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('quizzes').set(quizData).then(()=>alert('บันทึกสำเร็จ!'))">💾 บันทึกลงระบบ</button>
+        <button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('quizzes').set(quizData).then(()=>alert('บันทึกข้อสอบสำเร็จ!'))">💾 บันทึกลงระบบ</button>
     </div>`;
     area.innerHTML = html;
 }
@@ -440,6 +475,6 @@ function addQ(u) { if(!quizData[u]) quizData[u]=[]; quizData[u].push({q:'',a:'',
 document.addEventListener("visibilitychange", () => {
     if (document.hidden && window.isDoingQuiz && userData && userData.studentId !== TEACHER_ID) {
         db.collection("anti_cheat_alerts").add({ studentName: userData.name, action: "สลับจอ", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        alert("🚨 [SYSTEM ALERT] ครูเบียร์เห็นนะ! ตรวจพบการพับหน้าจอระหว่างสืบสวน/ทำข้อสอบ!");
+        alert("🚨 [SYSTEM ALERT] ครูเบียร์เห็นนะ! ตรวจพบการพับหน้าจอระหว่างทำภารกิจ!");
     }
 });
