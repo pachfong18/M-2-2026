@@ -49,6 +49,11 @@ const SHOP_ITEMS = [
 ];
 
 // --- Core Auth ---
+function handleLoginEnter(e) {
+    if (e.key === 'Enter') {
+        login();
+    }
+}
 function toggleAuth(type) {
     document.getElementById('login-section').classList.toggle('hidden', type === 'reg');
     document.getElementById('reg-section').classList.toggle('hidden', type === 'login');
@@ -111,7 +116,6 @@ auth.onAuthStateChanged(user => {
         db.collection("settings").doc("quizzes").onSnapshot(doc => { quizData = doc.data() || {}; });
         db.collection("settings").doc("quest_board").onSnapshot(doc => { questStatus = doc.data() || questStatus; });
         db.collection("settings").doc("lessons").onSnapshot(doc => { lessonsData = doc.data() || { unit1:[], unit2:[], unit3:[] }; });
-        db.collection("settings").doc("announcements").onSnapshot(doc => { announcements = (doc.data() || {}).list || []; if(document.getElementById('dash-announcements')) showPage('dashboard', document.querySelectorAll('.nav-btn')[0]); });
         db.collection("settings").doc("monthly_case").onSnapshot(doc => { 
             let data = doc.data();
             if(data) {
@@ -119,6 +123,20 @@ auth.onAuthStateChanged(user => {
                 if(!data.cluesToggle) data.cluesToggle = [false,false,false,false,false,false,false,false,false,false];
                 caseStatus = data;
             } else db.collection("settings").doc("monthly_case").set(caseStatus);
+        });
+
+        // 🌟 แก้ไข: ระบบดึงประกาศแบบ Real-time โดยไม่บังคับเปลี่ยนหน้า
+        db.collection("settings").doc("announcements").onSnapshot(doc => { 
+            announcements = (doc.data() || {}).list || []; 
+            const annContainer = document.getElementById('dash-announcements');
+            // ถ้าผู้ใช้กำลังอยู่หน้า Dashboard ให้มันอัปเดตกล่องประกาศทันที
+            if(annContainer) {
+                let annHTML = "";
+                announcements.forEach(a => { 
+                    annHTML += `<div style="background:rgba(255,204,0,0.1); border-left:4px solid #ffcc00; padding:10px; margin-bottom:10px; font-size:14px; border-radius:5px;"><i class="fa-solid fa-bullhorn" style="color:#ffcc00;"></i> <b>ประกาศ:</b> ${a}</div>`; 
+                });
+                annContainer.innerHTML = annHTML;
+            }
         });
     }
 });
@@ -215,7 +233,6 @@ function showPage(id, btn) {
         const sm = userData.submittedMissions || [];
         const rm = userData.returnedMissions || [];
         
-        // เช็คว่าถ้ายังไม่ได้ส่ง (ไม่อยู่ใน sm) และยังไม่ได้ตรวจคืน (ไม่อยู่ใน rm) = ค้างงาน
         if (questStatus.unit1_m1 && !sm.includes('unit1_m1') && !rm.includes('unit1_m1')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 1</li>";
         if (questStatus.unit1_m2 && !sm.includes('unit1_m2') && !rm.includes('unit1_m2')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 2</li>";
         if (questStatus.unit2_m1 && !sm.includes('unit2_m1') && !rm.includes('unit2_m1')) pendingTasksHTML += "<li>📄 Unit 2 - อัปโหลดงานชิ้นที่ 1</li>";
@@ -225,7 +242,6 @@ function showPage(id, btn) {
         if (questStatus.boss_unit1 && !(userData.completedBosses || []).includes('unit1')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 1 แนวคิดเชิงคำนวณ</li>";
         if (questStatus.boss_unit2 && !(userData.completedBosses || []).includes('unit2')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 2 การออกแบบอัลกอริทึม</li>";
         if (questStatus.boss_unit3 && !(userData.completedBosses || []).includes('unit3')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 3 การเขียนโปรแกรม</li>";
-        
         const hasAns = userData.caseAnswer && userData.caseAnswer.who;
         if (!caseStatus.isRevealed && !hasAns) pendingTasksHTML += "<li>🕵️‍♂️ แฟ้มคดี: ยังไม่ได้ระบุตัวคนร้าย!</li>";
         if (pendingTasksHTML === "") pendingTasksHTML = "<li style='color:var(--aqua);'>ไม่มีงานค้าง! พักผ่อนได้เลยนักรบ</li>";
@@ -703,7 +719,7 @@ function viewTeacher(v) {
                     if (rm.includes(m)) {
                         row += `<td style="color:#33ccff; text-align:center; font-size:10px;">🔄 ส่งคืนแล้ว</td>`;
                     } else if (sm.includes(m)) {
-                        row += `<td><button class="btn-p" style="background:#00ff41; color:#000; padding:5px 10px; font-size:10px; white-space:nowrap;" onclick="returnWork('${s.studentId}', '${m}', '${s.name}')">✅ ส่งแล้ว<br>(คลิกเพื่อตรวจ/คืนงาน)</button></td>`;
+                        row += `<td><button class="btn-p" style="background:#00ff41; color:#000; padding:5px 10px; font-size:10px; white-space:nowrap;" onclick="returnWork('${s.studentId}', '${m}', '${s.name}')">✅ ส่งแล้ว<br>(คลิกคืนงาน)</button></td>`;
                     } else {
                         row += `<td style="color:#555; text-align:center; font-size:10px;">❌ ยังไม่ส่ง</td>`;
                     }
@@ -714,12 +730,22 @@ function viewTeacher(v) {
             box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#ff33cc;">สถานะการส่งงาน & คืนงานให้นักเรียน</h3>` + html + `</table></div>`;
         });
     }
+    // 🌟 แก้ไขฟังก์ชัน Announcements (Edit & Add via Enter) 🌟
     else if (v === 'announcements') {
         let annHTML = "";
         announcements.forEach((a, i) => {
-            annHTML += `<div style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;"><span>${a}</span><button class="btn-p btn-danger" style="padding:8px;" onclick="delAnnounce(${i})"><i class="fa-solid fa-trash"></i></button></div>`;
+            annHTML += `<div style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:15px; margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+                <input type="text" id="ann_edit_${i}" value="${a}" style="flex:1; margin:0;">
+                <button class="btn-p" style="padding:10px; font-size:10px;" onclick="editAnnounce(${i})"><i class="fa-solid fa-save"></i> บันทึก</button>
+                <button class="btn-p btn-danger" style="padding:10px;" onclick="delAnnounce(${i})"><i class="fa-solid fa-trash"></i></button>
+            </div>`;
         });
-        box.innerHTML = `<div style="background:rgba(255,153,0,0.1); border:1px solid #ff9900; padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:#ff9900;">จัดการประกาศหน้า Dashboard</h3><div style="display:flex; gap:10px; margin-bottom:20px;"><input type="text" id="new-announce" placeholder="พิมพ์ประกาศใหม่ที่นี่..."><button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:10px;" onclick="addAnnounce()">เพิ่มประกาศ</button></div>${annHTML}</div>`;
+        box.innerHTML = `<div style="background:rgba(255,153,0,0.1); border:1px solid #ff9900; padding:20px; border-radius:10px;">
+            <h3 class="pixel-font" style="font-size:12px; color:#ff9900;">จัดการประกาศหน้า Dashboard</h3>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="new-announce" placeholder="พิมพ์ประกาศใหม่ที่นี่..." onkeypress="if(event.key==='Enter') addAnnounce();">
+                <button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:10px;" onclick="addAnnounce()">เพิ่มประกาศ</button>
+            </div>${annHTML}</div>`;
     }
     else if (v === 'chat') {
         db.collection("chats").orderBy("lastUpdate", "desc").get().then(snap => {
@@ -750,3 +776,47 @@ function viewTeacher(v) {
         box.innerHTML = `<div style="background:rgba(0,255,255,0.1); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด การส่งงาน (ภารกิจย่อย)</h3><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 1: แนวคิดเชิงคำนวณ</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1_m1?'var(--aqua)':'#444'}; color:${questStatus.unit1_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit1_m2?'var(--aqua)':'#444'}; color:${questStatus.unit1_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m2')">ภารกิจ 2</button></div><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 2: การออกแบบอัลกอริทึม</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit2_m1?'var(--aqua)':'#444'}; color:${questStatus.unit2_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2_m2?'var(--aqua)':'#444'}; color:${questStatus.unit2_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m2')">ภารกิจ 2</button></div><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 3: Python</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit3_m1?'var(--aqua)':'#444'}; color:${questStatus.unit3_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit3_m2?'var(--aqua)':'#444'}; color:${questStatus.unit3_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m2')">ภารกิจ 2</button></div><hr style="border-color:#444; margin:20px 0;"><p style="font-size:12px; color:#aaa;">เปิดประตูใหญ่ (ปลดล็อค Unit)</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1?'var(--p-green)':'#444'}; color:${questStatus.unit1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1')">ปลดล็อค Unit 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2?'var(--p-green)':'#444'}; color:${questStatus.unit2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2')">ปลดล็อค Unit 2</button><button class="btn-p" style="flex:1; background:${questStatus.unit3?'var(--p-green)':'#444'}; color:${questStatus.unit3?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3')">ปลดล็อค Unit 3</button></div></div><div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">เปิด/ปิด สอบบอสไฟต์</h3><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit1?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit1?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit1')">Boss 1</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit2?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit2?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit2')">Boss 2</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit3?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit3?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit3')">Boss 3</button></div></div>`;
     }
 }
+
+// Announcements Support (Add & Edit)
+function addAnnounce() {
+    const text = document.getElementById('new-announce').value.trim();
+    if(!text) return;
+    let newAnn = [...announcements, text];
+    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
+}
+function editAnnounce(idx) {
+    const newText = document.getElementById(`ann_edit_${idx}`).value.trim();
+    if (!newText) return;
+    let newAnn = [...announcements];
+    newAnn[idx] = newText;
+    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => alert('อัปเดตประกาศสำเร็จ!'));
+}
+function delAnnounce(idx) {
+    let newAnn = [...announcements]; newAnn.splice(idx, 1);
+    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
+}
+
+function loadLessonEditor(u) {
+    const area = document.getElementById('lesson-editor-area'); if(!u) return area.innerHTML = ""; const items = lessonsData[u] || []; let html = ``;
+    items.forEach((item, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><input type="text" value="${item.title}" placeholder="ชื่อสื่อ" onchange="lessonsData['${u}'][${i}].title=this.value"><select onchange="lessonsData['${u}'][${i}].type=this.value"><option value="youtube" ${item.type==='youtube'?'selected':''}>YouTube URL</option><option value="image" ${item.type==='image'?'selected':''}>Image URL</option><option value="link" ${item.type==='link'?'selected':''}>Link Web</option></select><input type="text" value="${item.url}" placeholder="URL" onchange="lessonsData['${u}'][${i}].url=this.value"><button class="btn-p btn-danger" style="padding:10px; font-size:10px;" onclick="lessonsData['${u}'].splice(${i},1); loadLessonEditor('${u}');">ลบ</button></div>`; });
+    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="if(!lessonsData['${u}']) lessonsData['${u}']=[]; lessonsData['${u}'].push({title:'',type:'youtube',url:''}); loadLessonEditor('${u}');">+ เพิ่มสื่อ</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('lessons').set(lessonsData).then(()=>alert('บันทึกสำเร็จ!'))">💾 เซฟ</button></div>`;
+    area.innerHTML = html;
+}
+function loadEditor(u) {
+    const area = document.getElementById('editor-area'); if(!u) return area.innerHTML = ""; const qs = quizData[u] || []; let html = ``;
+    qs.forEach((q, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><strong style="color:var(--accent-gold);">ข้อ ${i+1}</strong><input type="text" value="${q.q}" placeholder="โจทย์" onchange="updateQ('${u}',${i},'q',this.value)"><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><input type="text" value="${q.a}" placeholder="A" onchange="updateQ('${u}',${i},'a',this.value)"><input type="text" value="${q.b}" placeholder="B" onchange="updateQ('${u}',${i},'b',this.value)"><input type="text" value="${q.c}" placeholder="C" onchange="updateQ('${u}',${i},'c',this.value)"><input type="text" value="${q.d}" placeholder="D" onchange="updateQ('${u}',${i},'d',this.value)"></div>เฉลย: <select style="width:100px; padding:10px;" onchange="updateQ('${u}',${i},'key',this.value)"><option value="A" ${q.key==='A'?'selected':''}>A</option><option value="B" ${q.key==='B'?'selected':''}>B</option><option value="C" ${q.key==='C'?'selected':''}>C</option><option value="D" ${q.key==='D'?'selected':''}>D</option></select><button class="btn-p btn-danger" style="padding:10px; font-size:10px; margin-left:10px;" onclick="quizData['${u}'].splice(${i},1); loadEditor('${u}');">ลบข้อนี้</button></div>`; });
+    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="addQ('${u}')">+ เพิ่มข้อใหม่</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('quizzes').set(quizData).then(()=>alert('บันทึกสำเร็จ!'))">💾 เซฟ</button></div>`;
+    area.innerHTML = html;
+}
+function updateQ(u, i, f, v) { quizData[u][i][f] = v; }
+function addQ(u) { if(!quizData[u]) quizData[u]=[]; quizData[u].push({q:'',a:'',b:'',c:'',d:'',key:'A'}); loadEditor(u); }
+function toggleSetting(col, key) { let target = col === 'quest_board' ? questStatus : caseStatus; db.collection("settings").doc(col).update({ [key]: !target[key] }).then(() => viewTeacher(col==='quest_board'?'quests':'detective')); }
+function toggleClue(index) { let newToggles = [...caseStatus.cluesToggle]; newToggles[index] = !newToggles[index]; db.collection("settings").doc("monthly_case").update({ cluesToggle: newToggles }).then(() => viewTeacher('detective')); }
+function changeActiveCase(caseIdx) { if(!confirm("เปลี่ยนคดีจะรีเซ็ตคำใบ้และปิดการเฉลย ยืนยันไหม?")) return viewTeacher('detective'); db.collection("settings").doc("monthly_case").update({ activeCaseId: parseInt(caseIdx), cluesToggle: [false,false,false,false,false,false,false,false,false,false], isRevealed: false }).then(() => viewTeacher('detective')); }
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden && window.isDoingQuiz && userData && userData.studentId !== TEACHER_ID) {
+        db.collection("anti_cheat_alerts").add({ studentName: userData.name, action: "สลับจอ", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        alert("🚨 [SYSTEM ALERT] ครูเบียร์เห็นนะ! ตรวจพบการพับหน้าจอระหว่างทำภารกิจ!");
+    }
+});
