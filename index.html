@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Srisuvit Quest - Ultimate Edition</title>
+    <title>Srisuvit Quest - Ultimate LMS</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -27,6 +27,7 @@
             <div class="nav-btn pixel-font" onclick="showPage('lessons', this)"><i class="fa-solid fa-book-open-reader"></i> Lessons</div>
             <div class="nav-btn pixel-font" onclick="showPage('quests', this)"><i class="fa-solid fa-map-location-dot"></i> Quest Board</div>
             <div class="nav-btn pixel-font detective-btn" onclick="showPage('detective', this)"><i class="fa-solid fa-magnifying-glass"></i> Detective</div>
+            <div class="nav-btn pixel-font" style="border-color:#ffcc00; color:#ffcc00;" onclick="showPage('shop', this)"><i class="fa-solid fa-cart-shopping"></i> Mana Shop</div>
             <div class="nav-btn pixel-font" onclick="showPage('status', this)"><i class="fa-solid fa-id-card"></i> Character</div>
             
             <div id="teacher-btn" class="nav-btn pixel-font teacher-btn hidden" onclick="showPage('teacher', this)">
@@ -62,8 +63,24 @@
         </div>
     </main>
 
+    <button id="chat-fab" class="hidden" onclick="toggleChatWidget()"><i class="fa-solid fa-message"></i></button>
+    
+    <div id="chat-widget" class="hidden">
+        <div class="chat-header pixel-font">
+            <span id="tab-ai" class="chat-tab active" onclick="switchChatTab('ai')"><i class="fa-solid fa-robot"></i> AI</span>
+            <span id="tab-teacher" class="chat-tab" onclick="switchChatTab('teacher')"><i class="fa-solid fa-chalkboard-user"></i> Kru Beer</span>
+            <span style="float:right; cursor:pointer;" onclick="toggleChatWidget()"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <div id="chat-history">
+            </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="พิมพ์ข้อความที่นี่..." onkeypress="handleChatEnter(event)">
+            <button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
     <div class="status-bar">
-        <span><i class="fa-solid fa-user-tag"></i> <span id="st-name">...</span></span>
+        <span><i class="fa-solid fa-user-tag"></i> <span id="st-name">...</span> <span id="st-title" style="color:#ffcc00; margin-left:5px;"></span></span>
         <span><i class="fa-solid fa-bolt-lightning"></i> MP: <span id="st-mp">0</span> | LV: <span id="st-lv">1</span></span>
         <span><i class="fa-solid fa-location-arrow"></i> SRISUVIT M.2</span>
     </div>
