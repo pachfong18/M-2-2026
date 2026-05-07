@@ -30,27 +30,20 @@ const TEACHER_ID = "pchrkr007";
 let teacherChatUnsubscribe = null;
 let currentTeacherChatId = null;
 
-// 🌟 ไอเท็มร้านค้า (ฉายา, ไอคอน, สีชื่อ, กรอบรูป)
+// ไอเท็มร้านค้า
 const SHOP_ITEMS = [
-    // 👑 หมวดฉายา
     { id: "title_1", name: "[ฉายา] ผู้กล้าฝึกหัด", cost: 50, type: "title", value: "ผู้กล้าฝึกหัด", icon: "fa-shield-halved" },
     { id: "title_2", name: "[ฉายา] จ้าวแห่งบั๊ก", cost: 150, type: "title", value: "จ้าวแห่งบั๊ก", icon: "fa-bug" },
     { id: "title_3", name: "[ฉายา] แฮกเกอร์เงา", cost: 300, type: "title", value: "แฮกเกอร์เงา", icon: "fa-user-secret" },
     { id: "title_4", name: "[ฉายา] เทพทรู", cost: 1000, type: "title", value: "เทพทรู", icon: "fa-crown" },
-
-    // 🏷️ หมวดไอคอนหน้าชื่อ
     { id: "icon_1", name: "[ไอคอน] ดาวทอง", cost: 100, type: "icon", value: "fa-star", icon: "fa-star" },
     { id: "icon_2", name: "[ไอคอน] สายฟ้า", cost: 200, type: "icon", value: "fa-bolt", icon: "fa-bolt" },
     { id: "icon_3", name: "[ไอคอน] มังกร", cost: 500, type: "icon", value: "fa-dragon", icon: "fa-dragon" },
     { id: "icon_4", name: "[ไอคอน] หัวกะโหลก", cost: 600, type: "icon", value: "fa-skull", icon: "fa-skull" },
-
-    // 🎨 หมวดสีเรืองแสง (ออร่า)
     { id: "glow_1", name: "[ออร่า] สีแดงเพลิง", cost: 250, type: "glow", value: "glow-red", icon: "fa-fire" },
     { id: "glow_2", name: "[ออร่า] สีฟ้าน้ำแข็ง", cost: 250, type: "glow", value: "glow-blue", icon: "fa-water" },
     { id: "glow_3", name: "[ออร่า] สีม่วงลี้ลับ", cost: 350, type: "glow", value: "glow-purple", icon: "fa-moon" },
     { id: "glow_4", name: "[ออร่า] สีทองคำ", cost: 800, type: "glow", value: "glow-gold", icon: "fa-sun" },
-
-    // 🖼️ หมวดกรอบรูปโปรไฟล์
     { id: "frame_1", name: "[กรอบ] นีออน", cost: 400, type: "frame", value: "frame-neon", icon: "fa-square" },
     { id: "frame_2", name: "[กรอบ] ไฟนรก", cost: 800, type: "frame", value: "frame-fire", icon: "fa-fire-flame-curved" },
     { id: "frame_3", name: "[กรอบ] ไซเบอร์", cost: 1200, type: "frame", value: "frame-cyber", icon: "fa-microchip" }
@@ -77,7 +70,7 @@ function register() {
             caseAnswer: {who:"",where:"",what:""}, completedBosses: [], submittedMissions: [],
             scores: {s1:0, s2:0, s3:0, mid:0, s4:0, s5:0, s6:0, final:0},
             inventory: [], equippedTitle: "", equippedIcon: "", equippedGlow: "", equippedFrame: "",
-            lastActive: firebase.firestore.FieldValue.serverTimestamp() // สำหรับเช็ค Online
+            lastActive: firebase.firestore.FieldValue.serverTimestamp()
         });
     }).catch(e => alert(e.message));
 }
@@ -93,12 +86,11 @@ auth.onAuthStateChanged(user => {
         
         db.collection("students").doc(userId).onSnapshot(doc => {
             userData = doc.data();
-            applyUserCosmetics(); // จัดการเรนเดอร์ชื่อ เอฟเฟกต์ และไอคอน
+            applyUserCosmetics(); 
 
             document.getElementById('st-mp').innerText = userData.mana;
             document.getElementById('st-lv').innerText = userData.level;
             
-            // เปิดแชทสำหรับเด็ก
             if(userId !== TEACHER_ID && document.getElementById('chat-fab').classList.contains('hidden')){
                 document.getElementById('chat-fab').classList.remove('hidden');
                 initTeacherChatListener();
@@ -111,14 +103,12 @@ auth.onAuthStateChanged(user => {
             document.getElementById('chat-fab').classList.add('hidden'); 
         }
 
-        // ระบบจับ Online (อัปเดตทุก 1 นาทีถ้าเปิดจออยู่)
         setInterval(() => {
             if(!document.hidden && userData && userId !== TEACHER_ID) {
                 db.collection("students").doc(userId).update({ lastActive: firebase.firestore.FieldValue.serverTimestamp() });
             }
         }, 60000);
         
-        // Load Settings
         db.collection("settings").doc("quizzes").onSnapshot(doc => { quizData = doc.data() || {}; });
         db.collection("settings").doc("quest_board").onSnapshot(doc => { questStatus = doc.data() || questStatus; });
         db.collection("settings").doc("lessons").onSnapshot(doc => { lessonsData = doc.data() || { unit1:[], unit2:[], unit3:[] }; });
@@ -134,23 +124,19 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-// นำของตกแต่งมาแสดงที่ชื่อ
 function applyUserCosmetics() {
     let titleStr = userData.equippedTitle ? `[${userData.equippedTitle}]` : "";
     let iconStr = userData.equippedIcon ? `<i class="fa-solid ${userData.equippedIcon}" style="margin-right:5px;"></i>` : "";
     let glowClass = userData.equippedGlow || "";
     
-    // อัปเดตแถบ Status
     document.getElementById('st-title').innerText = titleStr;
     document.getElementById('st-name-wrapper').innerHTML = `${iconStr}<span class="${glowClass}">${userData.name}</span>`;
     
-    // อัปเดตหน้า Character ถ้าเปิดอยู่
     if(document.getElementById('char-name-disp')) {
         document.getElementById('char-name-disp').innerHTML = `${iconStr}<span class="${glowClass}">${userData.name}</span>`;
         let charBox = document.getElementById('char-avatar-box');
         if(charBox) {
-            charBox.className = "avatar-box " + (userData.equippedFrame || ""); // ล้างคลาสเก่า ใส่คลาสกรอบใหม่
-            // ป้องกัน css class หาย
+            charBox.className = "avatar-box " + (userData.equippedFrame || "");
             charBox.style.width = "100px"; charBox.style.height = "100px"; charBox.style.background = "var(--aqua)";
             charBox.style.margin = "0 auto 20px auto"; charBox.style.display = "flex"; charBox.style.alignItems = "center";
             charBox.style.justifyContent = "center"; charBox.style.fontSize = "40px"; charBox.style.color = "#000";
@@ -158,6 +144,7 @@ function applyUserCosmetics() {
     }
 }
 
+// ฟังก์ชันเพิ่ม EXP (ใช้โดยบอสไฟต์)
 function addExp(studentId, amount) {
     let newExp = (userData.exp || 0) + amount;
     let newLevel = userData.level;
@@ -166,7 +153,19 @@ function addExp(studentId, amount) {
     db.collection("students").doc(studentId).update({ exp: newExp, level: newLevel, mana: newMana });
 }
 
-// --- Chat System (Student to Teacher ONLY) ---
+// ฟังก์ชันแจก EXP ด่วน (ใช้โดยครูเบียร์ในหน้า Admin)
+function teacherAddExp(id, cExp, cLv, cMp) {
+    let nExp = cExp + 50;
+    let nLv = cLv;
+    let nMp = cMp;
+    if(nExp >= 100) { nLv++; nExp -= 100; nMp += 30; }
+    db.collection("students").doc(id).update({ exp: nExp, level: nLv, mana: nMp }).then(() => {
+        alert("เพิ่ม 50 EXP ให้รหัส " + id + " สำเร็จ!");
+        viewTeacher('students');
+    });
+}
+
+// --- Chat System ---
 function toggleChatWidget() {
     const widget = document.getElementById('chat-widget');
     widget.classList.toggle('hidden');
@@ -258,10 +257,8 @@ function showPage(id, btn) {
         let shopHTML = `<h2 class="pixel-font" style="color:#ffcc00; text-shadow:0 0 10px #ffcc00;">>>> Mana Shop</h2>
                         <p style="color:#aaa;">ซื้อของตกแต่งโปรไฟล์! (MP ปัจจุบัน: <span style="color:var(--aqua); font-weight:bold;">${userData.mana}</span>)</p>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">`;
-        
         SHOP_ITEMS.forEach(item => {
             const isBought = (userData.inventory || []).includes(item.id);
-            // เช็คว่าไอเท็มประเภทนี้ กำลังใส่อยู่หรือเปล่า
             let isEquipped = false;
             if(item.type==='title') isEquipped = userData.equippedTitle === item.value;
             if(item.type==='icon') isEquipped = userData.equippedIcon === item.value;
@@ -277,11 +274,8 @@ function showPage(id, btn) {
                 const canAfford = userData.mana >= item.cost;
                 btnHTML = `<button class="btn-p pixel-font" style="background:${canAfford?'#ffcc00':'#444'}; color:#000; width:100%; font-size:10px;" ${canAfford?'':'disabled'} onclick="buyItem('${item.id}', ${item.cost})">ซื้อเลย</button>`;
             }
-
-            // แสดงเอฟเฟกต์ในร้านให้เห็นคร่าวๆ
             let previewClass = item.type === 'glow' ? item.value : '';
             let frameClass = item.type === 'frame' ? item.value : '';
-
             shopHTML += `
                 <div class="shop-card ${frameClass}" style="margin-bottom:10px;">
                     <i class="fa-solid ${item.icon} ${previewClass}"></i>
@@ -371,7 +365,6 @@ function showPage(id, btn) {
                         <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[3]}</th>${getCell(7,0)} ${getCell(7,1)} ${getCell(7,2)} ${getCell(7,3,true)}</tr>
                     </table>
                 </div>
-
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
                     <div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid #444;">
                         <h3 class="pixel-font" style="font-size:10px; color:var(--accent-gold);">[ เบาะแสที่พบ ]</h3>
@@ -391,7 +384,6 @@ function showPage(id, btn) {
         const intStat = Math.floor(userData.level * 1.5) + 10;
         const agiStat = Math.floor(userData.level * 1.2) + 8;
         const lukStat = Math.floor(userData.level * 2.0) + 5;
-        
         let iconStr = userData.equippedIcon ? `<i class="fa-solid ${userData.equippedIcon}" style="margin-right:5px;"></i>` : "";
         let glowClass = userData.equippedGlow || "";
         let frameClass = userData.equippedFrame || "";
@@ -400,11 +392,9 @@ function showPage(id, btn) {
             <h2 class="pixel-font aqua-glow">>>> Character Profile</h2>
             <div style="display:flex; flex-wrap:wrap; gap:30px; margin-top:20px;">
                 <div style="flex:1; min-width:250px; background:rgba(255,255,255,0.05); padding:30px; border-radius:20px; border:1px solid var(--glass-border); text-align:center;">
-                    
                     <div id="char-avatar-box" class="avatar-box ${frameClass}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000;">
                         <i class="fa-solid fa-user-astronaut"></i>
                     </div>
-
                     <h3 id="char-name-disp" style="margin:0; font-size:22px;">${iconStr}<span class="${glowClass}">${userData.name}</span></h3>
                     <p class="pixel-font" style="color:var(--aqua); font-size:10px; margin-top:10px;">${userData.rank}</p>
                     <p style="color:#aaa; font-size:14px;">ID: ${userData.studentId} | ห้อง: ${userData.room||'-'} | เลขที่: ${userData.number||'-'}</p>
@@ -427,8 +417,8 @@ function showPage(id, btn) {
             <h2 class="pixel-font" style="color:#ffcc00; text-shadow:0 0 10px #ffcc00;">>>> Kru Beer Admin Panel</h2>
             <div style="display:flex; flex-wrap:wrap; gap:10px; margin:20px 0;">
                 <button class="btn-p pixel-font" style="background:#ffcc00; color:#000; font-size:9px;" onclick="viewTeacher('students')">โปรไฟล์เด็ก</button>
-                <button class="btn-p pixel-font" style="background:#00ff41; color:#000; font-size:9px;" onclick="viewTeacher('online')">เช็คการออนไลน์</button>
-                <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('grading')">สมุดคะแนน</button>
+                <button class="btn-p pixel-font" style="background:#00ff41; color:#000; font-size:9px;" onclick="viewTeacher('online')">เช็คออนไลน์</button>
+                <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('grading')">ระบบคะแนน</button>
                 <button class="btn-p pixel-font" style="background:#fff; color:#000; font-size:9px;" onclick="viewTeacher('chat')">แชท 1-on-1</button>
                 <button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:9px;" onclick="viewTeacher('announcements')">ประกาศ</button>
                 <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('lessons')">สื่อการสอน</button>
@@ -441,11 +431,10 @@ function showPage(id, btn) {
     }
 }
 
-// --- Shop Logic (Buy & Equip) ---
+// --- Shop System Functions ---
 function buyItem(id, cost) {
     if(!confirm("ยืนยันการซื้อไอเทมนี้ด้วย " + cost + " MP?")) return;
-    let inv = userData.inventory || [];
-    inv.push(id);
+    let inv = userData.inventory || []; inv.push(id);
     db.collection("students").doc(userData.studentId).update({ mana: userData.mana - cost, inventory: inv }).then(() => {
         alert("ซื้อสำเร็จ!"); showPage('shop', document.querySelectorAll('.nav-btn')[4]);
     });
@@ -461,7 +450,7 @@ function equipItem(id, type, val) {
     });
 }
 
-// --- Quest Board Helper ---
+// --- Quest Board Helpers ---
 function renderQuestCard(unitNum, title, isUnlocked) {
     if(!isUnlocked) return `<div class="content-card" style="min-height:auto; padding:30px; opacity:0.5; border-color:#555;"><div style="font-size:30px; text-align:right; color:#555;"><i class="fa-solid fa-lock"></i></div><h3 class="pixel-font" style="font-size:12px; color:#888;">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#888;">ยังไม่ถึงเวลาเปิดภารกิจ</p></div>`;
     return `<div class="content-card" style="min-height:auto; padding:30px; border-color:var(--aqua);"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#ddd;">ส่งงาน 2 ชิ้น และเตรียมตัวสู้บอส</p><button class="btn-p pixel-font" style="width:100%; margin-top:10px; font-size:10px;" onclick="openQuestDetail('unit${unitNum}')">ENTER QUEST</button></div>`;
@@ -508,8 +497,7 @@ function uploadDrive(inputId, missionId) {
     let sm = userData.submittedMissions || [];
     if (!sm.includes(missionId)) sm.push(missionId);
     db.collection("students").doc(userData.studentId).update({ submittedMissions: sm }).then(() => {
-        alert("ส่งงานเรียบร้อยแล้ว!");
-        openQuestDetail(missionId.split('_')[0]);
+        alert("ส่งงานเรียบร้อยแล้ว!"); openQuestDetail(missionId.split('_')[0]);
     });
 }
 
@@ -584,21 +572,26 @@ function viewTeacher(v) {
                 if(a.room === b.room) return (parseInt(a.number)||0) - (parseInt(b.number)||0);
                 return (a.room||"").localeCompare(b.room||"");
             });
-            let html = `<table class="admin-table"><tr><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>Action</th></tr>`;
+            let html = `<div style="overflow-x:auto;"><table class="admin-table" style="min-width:800px;"><tr><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>LV</th><th>EXP</th><th>MP</th><th>Action</th></tr>`;
             studentsList.forEach(s => {
                 html += `<tr>
-                    <td><input type="text" class="edit-input" id="r_${s.studentId}" value="${s.room||''}" placeholder="ม.2/1"></td>
-                    <td><input type="number" class="edit-input" id="n_${s.studentId}" value="${s.number||''}" placeholder="เลขที่"></td>
+                    <td><input type="text" class="edit-input" style="width:50px;" id="r_${s.studentId}" value="${s.room||''}"></td>
+                    <td><input type="number" class="edit-input" style="width:50px;" id="n_${s.studentId}" value="${s.number||''}"></td>
                     <td>${s.studentId}</td>
-                    <td><input type="text" class="name-input" id="name_${s.studentId}" value="${s.name}"></td>
-                    <td><button class="btn-p" style="padding:8px 15px; font-size:10px;" onclick="saveStudentProfile('${s.studentId}')">Save</button></td>
+                    <td><input type="text" class="name-input" style="width:120px;" id="name_${s.studentId}" value="${s.name}"></td>
+                    <td><input type="number" class="edit-input" style="width:50px;" id="lv_${s.studentId}" value="${s.level||1}"></td>
+                    <td><input type="number" class="edit-input" style="width:60px;" id="exp_${s.studentId}" value="${s.exp||0}"></td>
+                    <td><input type="number" class="edit-input" style="width:60px;" id="mp_${s.studentId}" value="${s.mana||0}"></td>
+                    <td>
+                        <button class="btn-p" style="padding:8px 10px; font-size:10px;" onclick="saveStudentProfile('${s.studentId}')">บันทึก</button>
+                        <button class="btn-p btn-danger" style="padding:8px 10px; font-size:10px; border-color:var(--p-green); color:var(--p-green);" onclick="teacherAddExp('${s.studentId}', ${s.exp||0}, ${s.level||1}, ${s.mana||0})">+50 EXP</button>
+                    </td>
                 </tr>`;
             });
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#ffcc00;">แก้ไขโปรไฟล์นักเรียน</h3>` + html + "</table>";
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#ffcc00;">แก้ไขโปรไฟล์ & ค่าพลังนักเรียน</h3>` + html + "</table></div>";
         });
     }
     else if (v === 'online') {
-        // ดึงข้อมูลและเช็คสถานะการออนไลน์
         db.collection("students").where("studentId", "!=", TEACHER_ID).get().then(snap => {
             let studentsList = [];
             let now = new Date();
@@ -607,14 +600,11 @@ function viewTeacher(v) {
                 let isOnline = false;
                 if(s.lastActive) {
                     let lastTime = s.lastActive.toDate();
-                    let diffMins = (now - lastTime) / 60000;
-                    if(diffMins <= 2) isOnline = true; // ถ้าน้อยกว่า 2 นาทีถือว่ากำลังออนไลน์
+                    if((now - lastTime) / 60000 <= 2) isOnline = true;
                 }
                 s.isOnline = isOnline;
                 studentsList.push(s);
             });
-            
-            // เรียงคนออนไลน์ขึ้นก่อน แล้วค่อยตามด้วยห้อง/เลขที่
             studentsList.sort((a,b) => {
                 if(a.isOnline === b.isOnline) {
                     if(a.room === b.room) return (parseInt(a.number)||0) - (parseInt(b.number)||0);
@@ -623,13 +613,13 @@ function viewTeacher(v) {
                 return a.isOnline ? -1 : 1;
             });
 
-            let html = `<table class="admin-table"><tr><th>Status</th><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>เวลาเข้าใช้งานล่าสุด</th></tr>`;
+            let html = `<table class="admin-table"><tr><th>Status</th><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>ใช้งานล่าสุด</th></tr>`;
             studentsList.forEach(s => {
-                let statusIcon = s.isOnline ? `<i class="fa-solid fa-circle" style="color:#00ff41;"></i>` : `<i class="fa-regular fa-circle" style="color:#555;"></i>`;
+                let statusIcon = s.isOnline ? `<i class="fa-solid fa-circle" style="color:#00ff41;"></i> (กำลังเล่น)` : `<i class="fa-regular fa-circle" style="color:#555;"></i> (ออฟไลน์)`;
                 let timeStr = s.lastActive ? s.lastActive.toDate().toLocaleTimeString('th-TH') : 'ไม่มีข้อมูล';
                 html += `<tr><td>${statusIcon}</td><td>${s.room||'-'}</td><td>${s.number||'-'}</td><td>${s.studentId}</td><td>${s.name}</td><td>${timeStr}</td></tr>`;
             });
-            box.innerHTML = `<div style="background:rgba(0,255,65,0.1); padding:20px; border-radius:10px; border:1px solid #00ff41;"><h3 class="pixel-font" style="font-size:12px; color:#00ff41;">เรดาร์ตรวจสอบการออนไลน์ (ระบบจะจับทุกๆ 1 นาที)</h3>${html}</table></div>`;
+            box.innerHTML = `<div style="background:rgba(0,255,65,0.1); padding:20px; border-radius:10px; border:1px solid #00ff41;"><h3 class="pixel-font" style="font-size:12px; color:#00ff41;">เรดาร์ตรวจสอบการออนไลน์ (อัปเดตทุก 1 นาที)</h3>${html}</table></div>`;
         });
     }
     else if(v === 'grading') {
@@ -672,12 +662,9 @@ function viewTeacher(v) {
     else if (v === 'announcements') {
         let annHTML = "";
         announcements.forEach((a, i) => {
-            annHTML += `<div style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                <span>${a}</span><button class="btn-p btn-danger" style="padding:8px;" onclick="delAnnounce(${i})"><i class="fa-solid fa-trash"></i></button></div>`;
+            annHTML += `<div style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;"><span>${a}</span><button class="btn-p btn-danger" style="padding:8px;" onclick="delAnnounce(${i})"><i class="fa-solid fa-trash"></i></button></div>`;
         });
-        box.innerHTML = `<div style="background:rgba(255,153,0,0.1); border:1px solid #ff9900; padding:20px; border-radius:10px;">
-            <h3 class="pixel-font" style="font-size:12px; color:#ff9900;">จัดการประกาศหน้า Dashboard</h3>
-            <div style="display:flex; gap:10px; margin-bottom:20px;"><input type="text" id="new-announce" placeholder="พิมพ์ประกาศใหม่ที่นี่..."><button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:10px;" onclick="addAnnounce()">เพิ่มประกาศ</button></div>${annHTML}</div>`;
+        box.innerHTML = `<div style="background:rgba(255,153,0,0.1); border:1px solid #ff9900; padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:#ff9900;">จัดการประกาศ</h3><div style="display:flex; gap:10px; margin-bottom:20px;"><input type="text" id="new-announce" placeholder="พิมพ์ประกาศใหม่ที่นี่..."><button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:10px;" onclick="addAnnounce()">เพิ่มประกาศ</button></div>${annHTML}</div>`;
     }
     else if (v === 'chat') {
         db.collection("chats").orderBy("lastUpdate", "desc").get().then(snap => {
@@ -686,20 +673,14 @@ function viewTeacher(v) {
                 let d = doc.data();
                 listHTML += `<div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-bottom:10px; cursor:pointer; border:1px solid var(--glass-border);" onclick="openTeacherChat('${doc.id}', '${d.studentName}')"><i class="fa-solid fa-user"></i> ${d.studentName} (รหัส: ${doc.id})</div>`;
             });
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px;">กล่องข้อความจากนักเรียน</h3><div style="display:flex; gap:20px;">
-                <div style="flex:1;">${listHTML||'<p>ยังไม่มีข้อความ</p>'}</div>
-                <div style="flex:2; background:#000; border-radius:10px; padding:20px; display:flex; flex-direction:column; height:400px;" id="t-chat-window">คลิกที่ชื่อนักเรียนเพื่อเริ่มแชท</div></div>`;
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px;">กล่องข้อความนักเรียน</h3><div style="display:flex; gap:20px;"><div style="flex:1;">${listHTML||'<p>ยังไม่มีข้อความ</p>'}</div><div style="flex:2; background:#000; border-radius:10px; padding:20px; display:flex; flex-direction:column; height:400px;" id="t-chat-window">คลิกที่ชื่อนักเรียนเพื่อเริ่มแชท</div></div>`;
         });
     }
     else if(v === 'lessons') {
-        box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;">
-            <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการสื่อการสอน (Lessons)</h3>
-            <select id="t-lesson-unit" onchange="loadLessonEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="lesson-editor-area"></div></div>`;
+        box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการสื่อการสอน (Lessons)</h3><select id="t-lesson-unit" onchange="loadLessonEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="lesson-editor-area"></div></div>`;
     }
     else if(v === 'quizzes') {
-        box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;">
-            <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการข้อสอบ Boss Fight</h3>
-            <select id="t-quiz-unit" onchange="loadEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="editor-area"></div></div>`;
+        box.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">จัดการข้อสอบ Boss Fight</h3><select id="t-quiz-unit" onchange="loadEditor(this.value)"><option value="">-- เลือก Unit --</option><option value="unit1">Unit 1</option><option value="unit2">Unit 2</option><option value="unit3">Unit 3</option></select><div id="editor-area"></div></div>`;
     }
     else if(v === 'detective') {
         let toggleBtns = "";
@@ -708,111 +689,42 @@ function viewTeacher(v) {
             toggleBtns += `<button class="btn-p" style="font-size:9px; background:${isOpen?'var(--aqua)':'#444'}; color:${isOpen?'#000':'#fff'};" onclick="toggleClue(${i})">คำใบ้ ${i+1}</button>`;
         }
         let caseOptions = CASES_DB.map((c, i) => `<option value="${i}" ${caseStatus.activeCaseId === i ? 'selected' : ''}>${c.title}</option>`).join('');
-        box.innerHTML = `<div style="background:rgba(179,102,255,0.1); border:1px solid var(--detective-purple); padding:20px; border-radius:10px;">
-            <h3 class="pixel-font" style="font-size:12px; color:var(--detective-purple);">ควบคุมแฟ้มคดีสืบสวน</h3>
-            <label style="font-size:12px;">เลือกคดีให้เด็กเล่น</label><select onchange="changeActiveCase(this.value)" style="background:#000;">${caseOptions}</select><hr style="border-color:#444; margin:20px 0;">
-            <p style="font-size:12px;">กดปุ่มเพื่อโชว์/ซ่อนคำใบ้</p><div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;">${toggleBtns}</div>
-            <button class="btn-p" style="width:100%; background:${caseStatus.isRevealed?'var(--alert-red)':'var(--detective-purple)'};" onclick="toggleSetting('monthly_case', 'isRevealed')">${caseStatus.isRevealed ? 'ปิดการเฉลย' : '📢 กดปุ่มประกาศเฉลยให้เด็กเห็น'}</button></div>`;
+        box.innerHTML = `<div style="background:rgba(179,102,255,0.1); border:1px solid var(--detective-purple); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--detective-purple);">ควบคุมแฟ้มคดีสืบสวน</h3><label style="font-size:12px;">เลือกคดีให้เด็กเล่น</label><select onchange="changeActiveCase(this.value)" style="background:#000;">${caseOptions}</select><hr style="border-color:#444; margin:20px 0;"><p style="font-size:12px;">กดปุ่มเพื่อโชว์/ซ่อนคำใบ้</p><div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;">${toggleBtns}</div><button class="btn-p" style="width:100%; background:${caseStatus.isRevealed?'var(--alert-red)':'var(--detective-purple)'};" onclick="toggleSetting('monthly_case', 'isRevealed')">${caseStatus.isRevealed ? 'ปิดการเฉลย' : '📢 กดปุ่มประกาศเฉลยให้เด็กเห็น'}</button></div>`;
     }
     else if(v === 'quests') {
-        box.innerHTML = `<div style="background:rgba(0,255,255,0.1); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;">
-            <h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด การส่งงาน (ภารกิจย่อย)</h3>
-            <p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 1: แนวคิดเชิงคำนวณ</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1_m1?'var(--aqua)':'#444'}; color:${questStatus.unit1_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit1_m2?'var(--aqua)':'#444'}; color:${questStatus.unit1_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m2')">ภารกิจ 2</button></div>
-            <p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 2: การออกแบบอัลกอริทึม</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit2_m1?'var(--aqua)':'#444'}; color:${questStatus.unit2_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2_m2?'var(--aqua)':'#444'}; color:${questStatus.unit2_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m2')">ภารกิจ 2</button></div>
-            <p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 3: Python</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit3_m1?'var(--aqua)':'#444'}; color:${questStatus.unit3_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit3_m2?'var(--aqua)':'#444'}; color:${questStatus.unit3_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m2')">ภารกิจ 2</button></div>
-            <hr style="border-color:#444; margin:20px 0;"><p style="font-size:12px; color:#aaa;">เปิดประตูใหญ่ (ปลดล็อค Unit)</p>
-            <div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1?'var(--p-green)':'#444'}; color:${questStatus.unit1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1')">ปลดล็อค Unit 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2?'var(--p-green)':'#444'}; color:${questStatus.unit2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2')">ปลดล็อค Unit 2</button><button class="btn-p" style="flex:1; background:${questStatus.unit3?'var(--p-green)':'#444'}; color:${questStatus.unit3?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3')">ปลดล็อค Unit 3</button></div></div>
-        <div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;">
-            <h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">เปิด/ปิด สอบบอสไฟต์</h3>
-            <div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit1?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit1?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit1')">Boss 1</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit2?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit2?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit2')">Boss 2</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit3?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit3?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit3')">Boss 3</button></div></div>`;
+        box.innerHTML = `<div style="background:rgba(0,255,255,0.1); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด การส่งงาน (ภารกิจย่อย)</h3><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 1: แนวคิดเชิงคำนวณ</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1_m1?'var(--aqua)':'#444'}; color:${questStatus.unit1_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit1_m2?'var(--aqua)':'#444'}; color:${questStatus.unit1_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m2')">ภารกิจ 2</button></div><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 2: การออกแบบอัลกอริทึม</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit2_m1?'var(--aqua)':'#444'}; color:${questStatus.unit2_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2_m2?'var(--aqua)':'#444'}; color:${questStatus.unit2_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m2')">ภารกิจ 2</button></div><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 3: Python</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit3_m1?'var(--aqua)':'#444'}; color:${questStatus.unit3_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit3_m2?'var(--aqua)':'#444'}; color:${questStatus.unit3_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m2')">ภารกิจ 2</button></div><hr style="border-color:#444; margin:20px 0;"><p style="font-size:12px; color:#aaa;">เปิดประตูใหญ่ (ปลดล็อค Unit)</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1?'var(--p-green)':'#444'}; color:${questStatus.unit1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1')">ปลดล็อค Unit 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2?'var(--p-green)':'#444'}; color:${questStatus.unit2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2')">ปลดล็อค Unit 2</button><button class="btn-p" style="flex:1; background:${questStatus.unit3?'var(--p-green)':'#444'}; color:${questStatus.unit3?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3')">ปลดล็อค Unit 3</button></div></div><div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">เปิด/ปิด สอบบอสไฟต์</h3><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit1?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit1?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit1')">Boss 1</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit2?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit2?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit2')">Boss 2</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit3?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit3?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit3')">Boss 3</button></div></div>`;
     }
 }
 
-// Teacher Specific Chat
-function openTeacherChat(stuId, stuName) {
-    const win = document.getElementById('t-chat-window');
-    win.innerHTML = `<h4 style="margin-top:0; color:var(--aqua);">แชทกับ: ${stuName}</h4><div id="t-chat-msgs" style="flex-grow:1; overflow-y:auto; background:#111; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:10px; font-size:13px; margin-bottom:10px;"></div><div style="display:flex; gap:10px;"><input type="text" id="t-chat-input" placeholder="ตอบกลับนักเรียน..." style="margin:0; padding:10px;"><button class="btn-p" style="padding:10px;" onclick="sendTeacherMsg('${stuId}')"><i class="fa-solid fa-paper-plane"></i></button></div>`;
-    if(teacherChatUnsubscribe) teacherChatUnsubscribe();
-    currentTeacherChatId = stuId;
-    teacherChatUnsubscribe = db.collection("chats").doc(stuId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
-        const box = document.getElementById('t-chat-msgs');
-        if(!box) return; box.innerHTML = "";
-        snap.forEach(doc => {
-            let m = doc.data(); let align = m.sender === 'teacher' ? 'self-end' : 'self-start'; let bg = m.sender === 'teacher' ? 'var(--p-green)' : 'rgba(0,255,255,0.1)'; let color = m.sender === 'teacher' ? '#000' : '#fff';
-            box.innerHTML += `<div style="align-self:${align}; background:${bg}; color:${color}; padding:10px 15px; border-radius:15px; max-width:80%;">${m.text}</div>`;
-        });
-        box.scrollTop = box.scrollHeight;
-    });
-}
-function sendTeacherMsg(stuId) {
-    const input = document.getElementById('t-chat-input');
-    const text = input.value.trim();
-    if(!text) return;
-    db.collection("chats").doc(stuId).collection("messages").add({ sender: 'teacher', text: text, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-    db.collection("chats").doc(stuId).update({ lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
-    input.value = "";
-}
-
-// Announcements
-function addAnnounce() {
-    const text = document.getElementById('new-announce').value.trim();
-    if(!text) return;
-    let newAnn = [...announcements, text];
-    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
-}
-function delAnnounce(idx) {
-    let newAnn = [...announcements]; newAnn.splice(idx, 1);
-    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
-}
-
+// System Support Functions (Save, Load, Toggle)
 function saveStudentProfile(id) {
     const room = document.getElementById(`r_${id}`).value; const num = document.getElementById(`n_${id}`).value; const name = document.getElementById(`name_${id}`).value;
-    db.collection("students").doc(id).update({ room: room, number: num, name: name }).then(() => alert("อัปเดตข้อมูลสำเร็จ!"));
+    const lv = parseInt(document.getElementById(`lv_${id}`).value)||1; const exp = parseInt(document.getElementById(`exp_${id}`).value)||0; const mp = parseInt(document.getElementById(`mp_${id}`).value)||0;
+    db.collection("students").doc(id).update({ room: room, number: num, name: name, level: lv, exp: exp, mana: mp }).then(() => alert("อัปเดตข้อมูลสำเร็จ!"));
 }
 function updateGrade(id) {
-    let s1 = parseFloat(document.getElementById(`s1_${id}`).value) || 0; let s2 = parseFloat(document.getElementById(`s2_${id}`).value) || 0; let s3 = parseFloat(document.getElementById(`s3_${id}`).value) || 0; let mid = parseFloat(document.getElementById(`mid_${id}`).value) || 0; let s4 = parseFloat(document.getElementById(`s4_${id}`).value) || 0; let s5 = parseFloat(document.getElementById(`s5_${id}`).value) || 0; let s6 = parseFloat(document.getElementById(`s6_${id}`).value) || 0; let fin = parseFloat(document.getElementById(`fin_${id}`).value) || 0;
+    let s1 = parseFloat(document.getElementById(`s1_${id}`).value)||0; let s2 = parseFloat(document.getElementById(`s2_${id}`).value)||0; let s3 = parseFloat(document.getElementById(`s3_${id}`).value)||0; let mid = parseFloat(document.getElementById(`mid_${id}`).value)||0; let s4 = parseFloat(document.getElementById(`s4_${id}`).value)||0; let s5 = parseFloat(document.getElementById(`s5_${id}`).value)||0; let s6 = parseFloat(document.getElementById(`s6_${id}`).value)||0; let fin = parseFloat(document.getElementById(`fin_${id}`).value)||0;
     let pre = s1+s2+s3; let post = s4+s5+s6; let total = pre+post+mid+fin;
     document.getElementById(`pre_${id}`).innerText = pre; document.getElementById(`post_${id}`).innerText = post; document.getElementById(`tot_${id}`).innerText = total;
     db.collection("students").doc(id).update({ scores: { s1:s1, s2:s2, s3:s3, mid:mid, s4:s4, s5:s5, s6:s6, final:fin } });
 }
-
 function loadLessonEditor(u) {
-    const area = document.getElementById('lesson-editor-area');
-    if(!u) return area.innerHTML = "";
-    const items = lessonsData[u] || [];
-    let html = ``;
-    items.forEach((item, i) => {
-        html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><input type="text" value="${item.title}" placeholder="ชื่อสื่อการสอน" onchange="lessonsData['${u}'][${i}].title=this.value"><select onchange="lessonsData['${u}'][${i}].type=this.value"><option value="youtube" ${item.type==='youtube'?'selected':''}>YouTube Embed URL</option><option value="image" ${item.type==='image'?'selected':''}>Image URL (รูปภาพ)</option><option value="link" ${item.type==='link'?'selected':''}>Link (เว็บไซต์/เอกสาร)</option></select><input type="text" value="${item.url}" placeholder="URL ลิงก์สื่อ" onchange="lessonsData['${u}'][${i}].url=this.value"><button class="btn-p btn-danger" style="padding:10px; font-size:10px;" onclick="lessonsData['${u}'].splice(${i},1); loadLessonEditor('${u}');">ลบสื่อนี้</button></div>`;
-    });
-    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="if(!lessonsData['${u}']) lessonsData['${u}']=[]; lessonsData['${u}'].push({title:'',type:'youtube',url:''}); loadLessonEditor('${u}');">+ เพิ่มสื่อการสอน</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('lessons').set(lessonsData).then(()=>alert('บันทึกสื่อการสอนสำเร็จ!'))">💾 บันทึกลงระบบ</button></div>`;
+    const area = document.getElementById('lesson-editor-area'); if(!u) return area.innerHTML = ""; const items = lessonsData[u] || []; let html = ``;
+    items.forEach((item, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><input type="text" value="${item.title}" placeholder="ชื่อสื่อ" onchange="lessonsData['${u}'][${i}].title=this.value"><select onchange="lessonsData['${u}'][${i}].type=this.value"><option value="youtube" ${item.type==='youtube'?'selected':''}>YouTube URL</option><option value="image" ${item.type==='image'?'selected':''}>Image URL</option><option value="link" ${item.type==='link'?'selected':''}>Link Web</option></select><input type="text" value="${item.url}" placeholder="URL" onchange="lessonsData['${u}'][${i}].url=this.value"><button class="btn-p btn-danger" style="padding:10px; font-size:10px;" onclick="lessonsData['${u}'].splice(${i},1); loadLessonEditor('${u}');">ลบ</button></div>`; });
+    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="if(!lessonsData['${u}']) lessonsData['${u}']=[]; lessonsData['${u}'].push({title:'',type:'youtube',url:''}); loadLessonEditor('${u}');">+ เพิ่มสื่อ</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('lessons').set(lessonsData).then(()=>alert('บันทึกสำเร็จ!'))">💾 เซฟ</button></div>`;
     area.innerHTML = html;
 }
 function loadEditor(u) {
-    const area = document.getElementById('editor-area');
-    if(!u) return area.innerHTML = "";
-    const qs = quizData[u] || [];
-    let html = ``;
-    qs.forEach((q, i) => {
-        html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><strong style="color:var(--accent-gold);">ข้อ ${i+1}</strong><input type="text" value="${q.q}" placeholder="โจทย์" onchange="updateQ('${u}',${i},'q',this.value)"><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><input type="text" value="${q.a}" placeholder="A" onchange="updateQ('${u}',${i},'a',this.value)"><input type="text" value="${q.b}" placeholder="B" onchange="updateQ('${u}',${i},'b',this.value)"><input type="text" value="${q.c}" placeholder="C" onchange="updateQ('${u}',${i},'c',this.value)"><input type="text" value="${q.d}" placeholder="D" onchange="updateQ('${u}',${i},'d',this.value)"></div>เฉลย: <select style="width:100px; padding:10px;" onchange="updateQ('${u}',${i},'key',this.value)"><option value="A" ${q.key==='A'?'selected':''}>A</option><option value="B" ${q.key==='B'?'selected':''}>B</option><option value="C" ${q.key==='C'?'selected':''}>C</option><option value="D" ${q.key==='D'?'selected':''}>D</option></select><button class="btn-p btn-danger" style="padding:10px; font-size:10px; margin-left:10px;" onclick="quizData['${u}'].splice(${i},1); loadEditor('${u}');">ลบข้อนี้</button></div>`;
-    });
-    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="addQ('${u}')">+ เพิ่มข้อใหม่</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('quizzes').set(quizData).then(()=>alert('บันทึกข้อสอบสำเร็จ!'))">💾 บันทึกลงระบบ</button></div>`;
+    const area = document.getElementById('editor-area'); if(!u) return area.innerHTML = ""; const qs = quizData[u] || []; let html = ``;
+    qs.forEach((q, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><strong style="color:var(--accent-gold);">ข้อ ${i+1}</strong><input type="text" value="${q.q}" placeholder="โจทย์" onchange="updateQ('${u}',${i},'q',this.value)"><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><input type="text" value="${q.a}" placeholder="A" onchange="updateQ('${u}',${i},'a',this.value)"><input type="text" value="${q.b}" placeholder="B" onchange="updateQ('${u}',${i},'b',this.value)"><input type="text" value="${q.c}" placeholder="C" onchange="updateQ('${u}',${i},'c',this.value)"><input type="text" value="${q.d}" placeholder="D" onchange="updateQ('${u}',${i},'d',this.value)"></div>เฉลย: <select style="width:100px; padding:10px;" onchange="updateQ('${u}',${i},'key',this.value)"><option value="A" ${q.key==='A'?'selected':''}>A</option><option value="B" ${q.key==='B'?'selected':''}>B</option><option value="C" ${q.key==='C'?'selected':''}>C</option><option value="D" ${q.key==='D'?'selected':''}>D</option></select><button class="btn-p btn-danger" style="padding:10px; font-size:10px; margin-left:10px;" onclick="quizData['${u}'].splice(${i},1); loadEditor('${u}');">ลบข้อนี้</button></div>`; });
+    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="addQ('${u}')">+ เพิ่มข้อใหม่</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('quizzes').set(quizData).then(()=>alert('บันทึกสำเร็จ!'))">💾 เซฟ</button></div>`;
     area.innerHTML = html;
 }
 function updateQ(u, i, f, v) { quizData[u][i][f] = v; }
 function addQ(u) { if(!quizData[u]) quizData[u]=[]; quizData[u].push({q:'',a:'',b:'',c:'',d:'',key:'A'}); loadEditor(u); }
-
-function toggleSetting(col, key) {
-    let target = col === 'quest_board' ? questStatus : caseStatus;
-    db.collection("settings").doc(col).update({ [key]: !target[key] }).then(() => viewTeacher(col==='quest_board'?'quests':'detective'));
-}
-function toggleClue(index) {
-    let newToggles = [...caseStatus.cluesToggle]; newToggles[index] = !newToggles[index];
-    db.collection("settings").doc("monthly_case").update({ cluesToggle: newToggles }).then(() => viewTeacher('detective'));
-}
-function changeActiveCase(caseIdx) {
-    if(!confirm("การเปลี่ยนคดีจะรีเซ็ตคำใบ้และปิดการเฉลย ยืนยันไหม?")) return viewTeacher('detective');
-    db.collection("settings").doc("monthly_case").update({ activeCaseId: parseInt(caseIdx), cluesToggle: [false,false,false,false,false,false,false,false,false,false], isRevealed: false }).then(() => viewTeacher('detective'));
-}
+function toggleSetting(col, key) { let target = col === 'quest_board' ? questStatus : caseStatus; db.collection("settings").doc(col).update({ [key]: !target[key] }).then(() => viewTeacher(col==='quest_board'?'quests':'detective')); }
+function toggleClue(index) { let newToggles = [...caseStatus.cluesToggle]; newToggles[index] = !newToggles[index]; db.collection("settings").doc("monthly_case").update({ cluesToggle: newToggles }).then(() => viewTeacher('detective')); }
+function changeActiveCase(caseIdx) { if(!confirm("เปลี่ยนคดีจะรีเซ็ตคำใบ้และปิดการเฉลย ยืนยันไหม?")) return viewTeacher('detective'); db.collection("settings").doc("monthly_case").update({ activeCaseId: parseInt(caseIdx), cluesToggle: [false,false,false,false,false,false,false,false,false,false], isRevealed: false }).then(() => viewTeacher('detective')); }
 
 document.addEventListener("visibilitychange", () => {
     if (document.hidden && window.isDoingQuiz && userData && userData.studentId !== TEACHER_ID) {
