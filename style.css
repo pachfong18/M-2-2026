@@ -5,11 +5,12 @@
     --glass-white: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.15);
     --text-grey: #a1a1a1;
+    --alert-red: #ff3366;
+    --detective-purple: #b366ff;
 }
 
 * { box-sizing: border-box; transition: all 0.3s ease; }
 
-/* อนิเมชันพื้นหลังเคลื่อนไหว สีโทน Aqua นุ่มๆ */
 @keyframes aquaFlow {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -27,7 +28,6 @@ body {
 
 .pixel-font { font-family: 'Press Start 2P', cursive; text-transform: uppercase; }
 
-/* Sidebar ทรง Modern */
 .sidebar { 
     width: 280px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px);
     border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; 
@@ -35,9 +35,8 @@ body {
 }
 
 .logo-glow { font-size: 45px; color: var(--aqua); filter: drop-shadow(0 0 15px var(--aqua)); text-align: center; }
-.sidebar h1 { font-size: 11px; text-align: center; color: #fff; margin-top: 15px; letter-spacing: 1px; }
+.sidebar h1 { font-size: 11px; text-align: center; color: #fff; margin-top: 15px; letter-spacing: 1px; line-height: 1.5; }
 
-/* ปุ่มเมนูเรืองแสงสีขาว-เทา ตัด Aqua */
 .nav-btn {
     background: var(--glass-white); border: 1px solid var(--glass-border);
     color: var(--text-grey); padding: 16px; margin-bottom: 12px;
@@ -51,21 +50,18 @@ body {
     color: #fff; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
     transform: translateX(5px);
 }
-
 .nav-btn.teacher-btn { color: #ffcc00; border-color: rgba(255, 204, 0, 0.3); }
 .nav-btn.teacher-btn:hover { border-color: #ffcc00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.3); }
 
-/* Main Card */
 .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
 .content-card { 
     background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(30px);
     border: 1px solid var(--glass-border); border-radius: 20px;
-    padding: 50px; min-height: 80vh; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    padding: 40px; min-height: 80vh; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
 }
 
 .aqua-glow { color: var(--aqua); text-shadow: 0 0 10px var(--aqua); }
 
-/* Status Bar */
 .status-bar { 
     position: fixed; bottom: 0; left: 280px; right: 0;
     background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px);
@@ -73,36 +69,39 @@ body {
     display: flex; justify-content: space-between; font-size: 13px; color: var(--aqua);
 }
 
-/* UI Elements */
-input {
+input, select {
     background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
     color: #fff; padding: 15px; border-radius: 10px; width: 100%; margin: 10px 0;
 }
-input:focus { outline: none; border-color: var(--aqua); box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
+input:focus, select:focus { outline: none; border-color: var(--aqua); box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
 
 .btn-p { 
     background: var(--aqua); color: #000; border: none;
-    padding: 18px; border-radius: 10px; cursor: pointer; font-weight: bold;
+    padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;
 }
 .btn-p:hover { box-shadow: 0 0 25px var(--aqua); transform: translateY(-2px); }
+.btn-danger { background: transparent; border: 2px solid var(--alert-red); color: var(--alert-red); }
+.btn-danger:hover { background: var(--alert-red); color: #fff; box-shadow: 0 0 15px var(--alert-red); }
 
-/* Murdle Table (ขาวเทา Aqua) */
-.murdle-grid { border-collapse: collapse; background: rgba(255,255,255,0.05); color: #fff; margin: 20px 0; width: 100%; }
-.murdle-grid th, .murdle-grid td { border: 1px solid var(--glass-border); padding: 10px; text-align: center; }
-.murdle-grid th { background: rgba(0, 255, 255, 0.1); color: var(--aqua); font-size: 10px; }
-.clickable { cursor: pointer; font-family: 'Press Start 2P'; font-size: 14px; }
+/* Murdle Table Styles */
+.murdle-grid { border-collapse: collapse; background: rgba(0,0,0,0.4); color: #fff; margin: 20px 0; width: 100%; border-radius: 10px; overflow: hidden; }
+.murdle-grid th, .murdle-grid td { border: 1px solid #444; padding: 10px; text-align: center; font-size: 12px; }
+.murdle-grid th { background: rgba(0, 255, 255, 0.1); color: var(--aqua); font-weight: normal; }
+.murdle-grid th.header-group { background: #111; color: #fff; font-weight: bold; }
+.clickable { cursor: pointer; font-family: 'Press Start 2P'; font-size: 14px; background: rgba(255,255,255,0.02); }
+.clickable:hover { background: rgba(255,255,255,0.1); }
 .clickable.yes { color: var(--aqua); text-shadow: 0 0 10px var(--aqua); }
-.clickable.no { color: #ff003c; }
+.clickable.no { color: #ff3366; }
+.empty-cell { background: #111; border: none; }
+
+/* UI Enhancements */
+.stats-box { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; text-align: center; }
+.stats-val { font-size: 24px; font-weight: bold; color: var(--aqua); font-family: 'Press Start 2P'; margin-top: 10px; display: block;}
 
 .hidden { display: none; }
 .auth-link { text-align: center; color: #888; cursor: pointer; margin-top: 20px; font-size: 14px; }
 .auth-link:hover { color: #fff; }
 
-/* Bars */
-.bar-outer { background: #222; height: 12px; border-radius: 10px; overflow: hidden; margin: 10px 0; border: 1px solid #444; }
-.bar-fill { height: 100%; transition: width 0.5s ease; }
-
-/* Tables */
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--glass-border); }
-th { font-size: 12px; color: var(--aqua); }
+table.admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+table.admin-table th, table.admin-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+table.admin-table th { font-size: 12px; color: var(--aqua); background: rgba(0,0,0,0.5); }
