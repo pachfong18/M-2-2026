@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Srisuvit Quest - Ultimate LMS v6.5</title>
+    <title>Srisuvit Quest - Ultimate LMS v7.0</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,7 +19,7 @@
     <nav class="sidebar">
         <div class="sidebar-header">
             <div class="logo-glow"><i class="fa-solid fa-ghost"></i></div>
-            <h1 class="pixel-font">Srisuvit<br>Quest v6.5</h1>
+            <h1 class="pixel-font">Srisuvit<br>Quest v7.0</h1>
         </div>
         
         <div id="menu-items" class="hidden">
@@ -54,6 +54,17 @@
                 <h2 class="pixel-font" style="color:#fff;">>>> New Character</h2>
                 <input type="text" id="regName" placeholder="ชื่อ-นามสกุลจริง">
                 <input type="text" id="regId" placeholder="รหัสนักเรียน 5 หลัก">
+                <div style="display:flex; gap:10px;">
+                    <select id="regRoom" style="flex:2;">
+                        <option value="">-- เลือกห้อง --</option>
+                        <option value="London">London</option>
+                        <option value="Newyork">Newyork</option>
+                        <option value="Tokyo">Tokyo</option>
+                        <option value="Paris">Paris</option>
+                        <option value="Seoul">Seoul</option>
+                    </select>
+                    <input type="number" id="regNumber" placeholder="เลขที่" style="flex:1;">
+                </div>
                 <input type="password" id="regPass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)">
                 <button class="btn-p pixel-font" style="width:100%; background:var(--aqua);" onclick="register()">Create Account</button>
                 <p class="auth-link" onclick="toggleAuth('login')">มีตัวละครแล้ว? ล็อกอินที่นี่</p>
