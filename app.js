@@ -1,4 +1,11 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyi81vO2m34G4tS7_6S9Ld6uNq7D5N4FqZ6g3VzNq4/exec";
+// ==========================================
+// 🚨 ตั้งค่า URL จาก Google Apps Script ที่นี่ 🚨
+// ==========================================
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx6GS7NxoTdFLU_4usonU8GTQ9rhvSBcLUcyrEkNZE9EhTZM32EL4s4_CHEoGvjeMal/exec";
+
+// ==========================================
+// 🚨 ตั้งค่า Firebase Config ของครูเบียร์ 🚨
+// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyB8TZrULjTqu7hWphMrkiQHPydGriZcnoc",
     authDomain: "cs-classroom-web.firebaseapp.com",
@@ -86,7 +93,7 @@ auth.onAuthStateChanged(user => {
         
         db.collection("students").doc(userId).onSnapshot(doc => {
             userData = doc.data();
-            applyUserCosmetics(); // โหลดฉายาและออร่าลง Status Bar อัตโนมัติ
+            applyUserCosmetics(); 
 
             document.getElementById('st-mp').innerText = userData.mana;
             document.getElementById('st-lv').innerText = userData.level;
@@ -124,7 +131,6 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-// ฟังก์ชันตกแต่งแถบ Status Bar ตลอดเวลา
 function applyUserCosmetics() {
     let titleStr = userData.equippedTitle ? `[${userData.equippedTitle}]` : "";
     let iconStr = userData.equippedIcon ? `<i class="fa-solid ${userData.equippedIcon}" style="margin-right:5px;"></i>` : "";
@@ -132,6 +138,17 @@ function applyUserCosmetics() {
     
     document.getElementById('st-title').innerText = titleStr;
     document.getElementById('st-name-wrapper').innerHTML = `${iconStr}<span class="${glowClass}">${userData.name}</span>`;
+    
+    if(document.getElementById('char-name-disp')) {
+        document.getElementById('char-name-disp').innerHTML = `${iconStr}<span class="${glowClass}">${userData.name}</span>`;
+        let charBox = document.getElementById('char-avatar-box');
+        if(charBox) {
+            charBox.className = "avatar-box " + (userData.equippedFrame || "");
+            charBox.style.width = "100px"; charBox.style.height = "100px"; charBox.style.background = "var(--aqua)";
+            charBox.style.margin = "0 auto 20px auto"; charBox.style.display = "flex"; charBox.style.alignItems = "center";
+            charBox.style.justifyContent = "center"; charBox.style.fontSize = "40px"; charBox.style.color = "#000";
+        }
+    }
 }
 
 function addExp(studentId, amount) {
@@ -195,12 +212,11 @@ function showPage(id, btn) {
     if(btn) btn.classList.add('active');
     window.isDoingQuiz = false;
 
-    // เตรียมตัวแปรของตกแต่งให้พร้อมเรนเดอร์ในหน้าต่างๆ
     let iconStr = userData.equippedIcon ? `<i class="fa-solid ${userData.equippedIcon}" style="margin-right:8px; color:var(--aqua);"></i>` : "";
     let glowClass = userData.equippedGlow || "";
     let frameClass = userData.equippedFrame || "";
     let displayTitle = userData.equippedTitle || userData.rank;
-    let borderRadius = frameClass === 'frame-cyber' ? '10%' : '50%'; // กรอบไซเบอร์เป็นสี่เหลี่ยม
+    let borderRadius = frameClass === 'frame-cyber' ? '10%' : '50%';
 
     if (id === 'dashboard') {
         let pendingTasksHTML = "";
@@ -257,9 +273,9 @@ function showPage(id, btn) {
                 btnHTML = `<button class="btn-p pixel-font" style="background:${canAfford?'#ffcc00':'#444'}; color:#000; width:100%; font-size:10px;" ${canAfford?'':'disabled'} onclick="buyItem('${item.id}', ${item.cost})">ซื้อเลย</button>`;
             }
             let previewClass = item.type === 'glow' ? item.value : '';
-            let frameClass = item.type === 'frame' ? item.value : '';
+            let framePrClass = item.type === 'frame' ? item.value : '';
             shopHTML += `
-                <div class="shop-card ${frameClass}" style="margin-bottom:10px;">
+                <div class="shop-card ${framePrClass}" style="margin-bottom:10px;">
                     <i class="fa-solid ${item.icon} ${previewClass}"></i>
                     <h3 class="${previewClass}" style="font-size:14px; margin:0;">${item.name}</h3>
                     <div class="shop-price">${item.cost} MP</div>
@@ -347,7 +363,6 @@ function showPage(id, btn) {
                         <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[3]}</th>${getCell(7,0)} ${getCell(7,1)} ${getCell(7,2)} ${getCell(7,3,true)}</tr>
                     </table>
                 </div>
-
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
                     <div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid #444;">
                         <h3 class="pixel-font" style="font-size:10px; color:var(--accent-gold);">[ เบาะแสที่พบ ]</h3>
@@ -367,17 +382,12 @@ function showPage(id, btn) {
         const intStat = Math.floor(userData.level * 1.5) + 10;
         const agiStat = Math.floor(userData.level * 1.2) + 8;
         const lukStat = Math.floor(userData.level * 2.0) + 5;
-        
         display.innerHTML = `
             <h2 class="pixel-font aqua-glow">>>> Character Profile</h2>
             <div style="display:flex; flex-wrap:wrap; gap:30px; margin-top:20px;">
                 <div style="flex:1; min-width:250px; background:rgba(255,255,255,0.05); padding:30px; border-radius:20px; border:1px solid var(--glass-border); text-align:center;">
-                    
-                    <div class="avatar-box ${frameClass}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border-radius:${borderRadius};">
-                        <i class="fa-solid fa-user-astronaut"></i>
-                    </div>
-                    
-                    <h3 style="margin:0; font-size:22px;">${iconStr}<span class="${glowClass}">${userData.name}</span></h3>
+                    <div id="char-avatar-box" class="avatar-box ${frameClass}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border-radius:${borderRadius};"><i class="fa-solid fa-user-astronaut"></i></div>
+                    <h3 id="char-name-disp" style="margin:0; font-size:22px;">${iconStr}<span class="${glowClass}">${userData.name}</span></h3>
                     <p class="pixel-font" style="color:#ffcc00; font-size:10px; margin-top:10px; text-shadow:0 0 5px #ffcc00;">${displayTitle}</p>
                     <p style="color:#aaa; font-size:14px;">ID: ${userData.studentId} | ห้อง: ${userData.room||'-'} | เลขที่: ${userData.number||'-'}</p>
                 </div>
@@ -413,7 +423,7 @@ function showPage(id, btn) {
     }
 }
 
-// --- Shop Equipment Logic ---
+// --- Shop Logic ---
 function buyItem(id, cost) {
     if(!confirm("ยืนยันการซื้อไอเทมนี้ด้วย " + cost + " MP?")) return;
     let inv = userData.inventory || []; inv.push(id);
@@ -432,7 +442,7 @@ function equipItem(id, type, val) {
     });
 }
 
-// --- Quest Board Helpers ---
+// --- Quest Board & Google Drive Upload (NEW GAS FETCH LOGIC) ---
 function renderQuestCard(unitNum, title, isUnlocked) {
     if(!isUnlocked) return `<div class="content-card" style="min-height:auto; padding:30px; opacity:0.5; border-color:#555;"><div style="font-size:30px; text-align:right; color:#555;"><i class="fa-solid fa-lock"></i></div><h3 class="pixel-font" style="font-size:12px; color:#888;">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#888;">ยังไม่ถึงเวลาเปิดภารกิจ</p></div>`;
     return `<div class="content-card" style="min-height:auto; padding:30px; border-color:var(--aqua);"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#ddd;">ส่งงาน 2 ชิ้น และเตรียมตัวสู้บอส</p><button class="btn-p pixel-font" style="width:100%; margin-top:10px; font-size:10px;" onclick="openQuestDetail('unit${unitNum}')">ENTER QUEST</button></div>`;
@@ -472,15 +482,60 @@ function openQuestDetail(u) {
     if (!isBossCompleted && isBossOpen) renderBossQuestions(u);
 }
 
+// 🌟 อัปเดตระบบส่งงาน Google Drive แบบใช้ GAS_URL
 function uploadDrive(inputId, missionId) {
-    const file = document.getElementById(inputId).files[0];
-    if(!file) return alert("เลือกไฟล์ก่อนครับ!");
-    alert(`กำลังอัปโหลดงานไปยัง Google Drive...\n(ถ้า GAS_URL ถูกตั้งค่าแล้ว ไฟล์จะเข้า Drive ครูเบียร์)`);
-    let sm = userData.submittedMissions || [];
-    if (!sm.includes(missionId)) sm.push(missionId);
-    db.collection("students").doc(userData.studentId).update({ submittedMissions: sm }).then(() => {
-        alert("ส่งงานเรียบร้อยแล้ว!"); openQuestDetail(missionId.split('_')[0]);
-    });
+    const fileInput = document.getElementById(inputId);
+    const file = fileInput.files[0];
+    
+    if (!file) return alert("กรุณาเลือกไฟล์ก่อนส่งงานครับ!");
+    if (!GAS_URL || GAS_URL === "") return alert("ครูเบียร์ยังไม่ได้ตั้งค่า GAS_URL ในโค้ดครับ!");
+
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ กำลังอัปโหลด...";
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function() {
+        const base64Raw = reader.result;
+        const payload = {
+            file: base64Raw,
+            filename: file.name,
+            missionId: missionId,      // รูปแบบ: unit1_m1
+            studentName: userData.name // ส่งชื่อเด็กไปแปลงเป็นชื่อไฟล์ใน Drive
+        };
+
+        fetch(GAS_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.text())
+        .then(response => {
+            if (response === "Success") {
+                alert("✅ ส่งงานสำเร็จ! ไฟล์ถูกจัดเก็บลงโฟลเดอร์ " + missionId + " เรียบร้อย");
+                
+                let sm = userData.submittedMissions || [];
+                if (!sm.includes(missionId)) sm.push(missionId);
+                
+                db.collection("students").doc(userData.studentId).update({ 
+                    submittedMissions: sm 
+                }).then(() => {
+                    openQuestDetail(missionId.split('_')[0]); // Refresh หน้าเดิม
+                });
+            } else {
+                alert("❌ เกิดข้อผิดพลาด: " + response);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            alert("❌ ไม่สามารถเชื่อมต่อกับ Server Google Drive ได้");
+            console.error(err);
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
+    };
 }
 
 function renderBossQuestions(u) {
@@ -517,7 +572,6 @@ function submitBoss(u) {
     db.collection("students").doc(userData.studentId).update({ mana: userData.mana + mpGain, completedBosses: completedArr }).then(() => showPage('quests', document.querySelectorAll('.nav-btn')[2]));
 }
 
-// --- MURDLE HELPER ---
 function getCell(r, c, isBorder=false) {
     let val = window.murdleState[`r${r}c${c}`] || "";
     let cls = val === 'O' ? 'yes' : (val === 'X' ? 'no' : '');
@@ -578,23 +632,16 @@ function viewTeacher(v) {
             let studentsList = [];
             let now = new Date();
             snap.forEach(doc => {
-                let s = doc.data();
-                let isOnline = false;
-                if(s.lastActive) {
-                    let lastTime = s.lastActive.toDate();
-                    if((now - lastTime) / 60000 <= 2) isOnline = true;
-                }
-                s.isOnline = isOnline;
-                studentsList.push(s);
+                let s = doc.data(); let isOnline = false;
+                if(s.lastActive) { let lastTime = s.lastActive.toDate(); if((now - lastTime) / 60000 <= 2) isOnline = true; }
+                s.isOnline = isOnline; studentsList.push(s);
             });
             studentsList.sort((a,b) => {
                 if(a.isOnline === b.isOnline) {
                     if(a.room === b.room) return (parseInt(a.number)||0) - (parseInt(b.number)||0);
                     return (a.room||"").localeCompare(b.room||"");
-                }
-                return a.isOnline ? -1 : 1;
+                } return a.isOnline ? -1 : 1;
             });
-
             let html = `<table class="admin-table"><tr><th>Status</th><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>ใช้งานล่าสุด</th></tr>`;
             studentsList.forEach(s => {
                 let statusIcon = s.isOnline ? `<i class="fa-solid fa-circle" style="color:#00ff41;"></i> (กำลังเล่น)` : `<i class="fa-regular fa-circle" style="color:#555;"></i> (ออฟไลน์)`;
@@ -617,7 +664,6 @@ function viewTeacher(v) {
                 <th colspan="4" style="text-align:center; background:rgba(0,255,255,0.1);">ก่อนกลางภาค</th><th rowspan="2">กลางภาค(20)</th>
                 <th colspan="4" style="text-align:center; background:rgba(255,204,0,0.1);">หลังกลางภาค</th><th rowspan="2">ปลายภาค(20)</th><th rowspan="2" style="background:var(--p-green); color:#000;">รวม(100)</th></tr>
                 <tr><th>ช.1(10)</th><th>ช.2(10)</th><th>ช.3(10)</th><th style="color:var(--aqua);">รวม(30)</th><th>ช.4(10)</th><th>ช.5(10)</th><th>ช.6(10)</th><th style="color:#ffcc00;">รวม(30)</th></tr>`;
-            
             studentsList.forEach(s => {
                 let sc = s.scores || {s1:0,s2:0,s3:0,mid:0,s4:0,s5:0,s6:0,final:0};
                 let preMid = (parseFloat(sc.s1)||0) + (parseFloat(sc.s2)||0) + (parseFloat(sc.s3)||0);
@@ -638,7 +684,7 @@ function viewTeacher(v) {
                     <td id="tot_${s.studentId}" class="grade-total" style="color:#00ff41; font-size:16px;">${total}</td>
                 </tr>`;
             });
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#00ff41;">ระบบบันทึกคะแนน</h3>` + html + "</table></div>";
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#00ff41;">ระบบบันทึกคะแนน (พิมพ์ปุ๊บ เซฟปั๊บ)</h3>` + html + "</table></div>";
         });
     }
     else if (v === 'announcements') {
@@ -655,7 +701,7 @@ function viewTeacher(v) {
                 let d = doc.data();
                 listHTML += `<div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-bottom:10px; cursor:pointer; border:1px solid var(--glass-border);" onclick="openTeacherChat('${doc.id}', '${d.studentName}')"><i class="fa-solid fa-user"></i> ${d.studentName} (รหัส: ${doc.id})</div>`;
             });
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px;">กล่องข้อความจากนักเรียน</h3><div style="display:flex; gap:20px;"><div style="flex:1;">${listHTML||'<p>ยังไม่มีข้อความ</p>'}</div><div style="flex:2; background:#000; border-radius:10px; padding:20px; display:flex; flex-direction:column; height:400px;" id="t-chat-window">คลิกที่ชื่อนักเรียนเพื่อเริ่มแชท</div></div>`;
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px;">กล่องข้อความจากนักเรียน</h3><div style="display:flex; gap:20px;"><div style="flex:1; max-height:400px; overflow-y:auto;">${listHTML||'<p>ยังไม่มีข้อความ</p>'}</div><div style="flex:2; background:#000; border-radius:10px; padding:20px; display:flex; flex-direction:column; height:400px;" id="t-chat-window">คลิกที่ชื่อนักเรียนเพื่อเริ่มแชท</div></div>`;
         });
     }
     else if(v === 'lessons') {
@@ -703,19 +749,7 @@ function sendTeacherMsg(stuId) {
     input.value = "";
 }
 
-// Announcements
-function addAnnounce() {
-    const text = document.getElementById('new-announce').value.trim();
-    if(!text) return;
-    let newAnn = [...announcements, text];
-    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
-}
-function delAnnounce(idx) {
-    let newAnn = [...announcements]; newAnn.splice(idx, 1);
-    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
-}
-
-// Student Profile & Grading Support
+// System Data Controls
 function saveStudentProfile(id) {
     const room = document.getElementById(`r_${id}`).value; const num = document.getElementById(`n_${id}`).value; const name = document.getElementById(`name_${id}`).value;
     const lv = parseInt(document.getElementById(`lv_${id}`).value)||1; const exp = parseInt(document.getElementById(`exp_${id}`).value)||0; const mp = parseInt(document.getElementById(`mp_${id}`).value)||0;
@@ -727,8 +761,6 @@ function updateGrade(id) {
     document.getElementById(`pre_${id}`).innerText = pre; document.getElementById(`post_${id}`).innerText = post; document.getElementById(`tot_${id}`).innerText = total;
     db.collection("students").doc(id).update({ scores: { s1:s1, s2:s2, s3:s3, mid:mid, s4:s4, s5:s5, s6:s6, final:fin } });
 }
-
-// Editors & Toggles
 function loadLessonEditor(u) {
     const area = document.getElementById('lesson-editor-area'); if(!u) return area.innerHTML = ""; const items = lessonsData[u] || []; let html = ``;
     items.forEach((item, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><input type="text" value="${item.title}" placeholder="ชื่อสื่อ" onchange="lessonsData['${u}'][${i}].title=this.value"><select onchange="lessonsData['${u}'][${i}].type=this.value"><option value="youtube" ${item.type==='youtube'?'selected':''}>YouTube URL</option><option value="image" ${item.type==='image'?'selected':''}>Image URL</option><option value="link" ${item.type==='link'?'selected':''}>Link Web</option></select><input type="text" value="${item.url}" placeholder="URL" onchange="lessonsData['${u}'][${i}].url=this.value"><button class="btn-p btn-danger" style="padding:10px; font-size:10px;" onclick="lessonsData['${u}'].splice(${i},1); loadLessonEditor('${u}');">ลบ</button></div>`; });
