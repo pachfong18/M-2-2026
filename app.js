@@ -1,11 +1,4 @@
-// ==========================================
-// 🚨 ตั้งค่า URL จาก Google Apps Script ที่นี่ 🚨
-// ==========================================
 const GAS_URL = "https://script.google.com/macros/s/AKfycbx6GS7NxoTdFLU_4usonU8GTQ9rhvSBcLUcyrEkNZE9EhTZM32EL4s4_CHEoGvjeMal/exec";
-
-// ==========================================
-// 🚨 ตั้งค่า Firebase Config ของครูเบียร์ 🚨
-// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyB8TZrULjTqu7hWphMrkiQHPydGriZcnoc",
     authDomain: "cs-classroom-web.firebaseapp.com",
@@ -411,6 +404,7 @@ function showPage(id, btn) {
                 <button class="btn-p pixel-font" style="background:#ffcc00; color:#000; font-size:9px;" onclick="viewTeacher('students')">โปรไฟล์เด็ก</button>
                 <button class="btn-p pixel-font" style="background:#00ff41; color:#000; font-size:9px;" onclick="viewTeacher('online')">เช็คออนไลน์</button>
                 <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('grading')">สมุดคะแนน</button>
+                <button class="btn-p pixel-font" style="background:#ff33cc; color:#fff; font-size:9px;" onclick="viewTeacher('assignments')">ตรวจงาน</button>
                 <button class="btn-p pixel-font" style="background:#fff; color:#000; font-size:9px;" onclick="viewTeacher('chat')">แชท 1-on-1</button>
                 <button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:9px;" onclick="viewTeacher('announcements')">ประกาศ</button>
                 <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('lessons')">สื่อการสอน</button>
@@ -423,7 +417,7 @@ function showPage(id, btn) {
     }
 }
 
-// --- Shop Logic ---
+// --- Shop Equipment Logic ---
 function buyItem(id, cost) {
     if(!confirm("ยืนยันการซื้อไอเทมนี้ด้วย " + cost + " MP?")) return;
     let inv = userData.inventory || []; inv.push(id);
@@ -442,7 +436,7 @@ function equipItem(id, type, val) {
     });
 }
 
-// --- Quest Board & Google Drive Upload (NEW GAS FETCH LOGIC) ---
+// --- Quest Board & Google Drive Upload ---
 function renderQuestCard(unitNum, title, isUnlocked) {
     if(!isUnlocked) return `<div class="content-card" style="min-height:auto; padding:30px; opacity:0.5; border-color:#555;"><div style="font-size:30px; text-align:right; color:#555;"><i class="fa-solid fa-lock"></i></div><h3 class="pixel-font" style="font-size:12px; color:#888;">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#888;">ยังไม่ถึงเวลาเปิดภารกิจ</p></div>`;
     return `<div class="content-card" style="min-height:auto; padding:30px; border-color:var(--aqua);"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#ddd;">ส่งงาน 2 ชิ้น และเตรียมตัวสู้บอส</p><button class="btn-p pixel-font" style="width:100%; margin-top:10px; font-size:10px;" onclick="openQuestDetail('unit${unitNum}')">ENTER QUEST</button></div>`;
@@ -482,7 +476,6 @@ function openQuestDetail(u) {
     if (!isBossCompleted && isBossOpen) renderBossQuestions(u);
 }
 
-// 🌟 อัปเดตระบบส่งงาน Google Drive แบบใช้ GAS_URL
 function uploadDrive(inputId, missionId) {
     const fileInput = document.getElementById(inputId);
     const file = fileInput.files[0];
@@ -499,41 +492,26 @@ function uploadDrive(inputId, missionId) {
     reader.readAsDataURL(file);
     reader.onload = function() {
         const base64Raw = reader.result;
-        const payload = {
-            file: base64Raw,
-            filename: file.name,
-            missionId: missionId,      // รูปแบบ: unit1_m1
-            studentName: userData.name // ส่งชื่อเด็กไปแปลงเป็นชื่อไฟล์ใน Drive
-        };
+        const payload = { file: base64Raw, filename: file.name, missionId: missionId, studentName: userData.name };
 
-        fetch(GAS_URL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        })
+        fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
         .then(res => res.text())
         .then(response => {
             if (response === "Success") {
                 alert("✅ ส่งงานสำเร็จ! ไฟล์ถูกจัดเก็บลงโฟลเดอร์ " + missionId + " เรียบร้อย");
-                
                 let sm = userData.submittedMissions || [];
                 if (!sm.includes(missionId)) sm.push(missionId);
-                
-                db.collection("students").doc(userData.studentId).update({ 
-                    submittedMissions: sm 
-                }).then(() => {
-                    openQuestDetail(missionId.split('_')[0]); // Refresh หน้าเดิม
+                db.collection("students").doc(userData.studentId).update({ submittedMissions: sm }).then(() => {
+                    openQuestDetail(missionId.split('_')[0]); 
                 });
             } else {
                 alert("❌ เกิดข้อผิดพลาด: " + response);
-                btn.innerText = originalText;
-                btn.disabled = false;
+                btn.innerText = originalText; btn.disabled = false;
             }
-        })
-        .catch(err => {
+        }).catch(err => {
             alert("❌ ไม่สามารถเชื่อมต่อกับ Server Google Drive ได้");
             console.error(err);
-            btn.innerText = originalText;
-            btn.disabled = false;
+            btn.innerText = originalText; btn.disabled = false;
         });
     };
 }
@@ -572,6 +550,7 @@ function submitBoss(u) {
     db.collection("students").doc(userData.studentId).update({ mana: userData.mana + mpGain, completedBosses: completedArr }).then(() => showPage('quests', document.querySelectorAll('.nav-btn')[2]));
 }
 
+// --- MURDLE HELPER ---
 function getCell(r, c, isBorder=false) {
     let val = window.murdleState[`r${r}c${c}`] || "";
     let cls = val === 'O' ? 'yes' : (val === 'X' ? 'no' : '');
@@ -642,6 +621,7 @@ function viewTeacher(v) {
                     return (a.room||"").localeCompare(b.room||"");
                 } return a.isOnline ? -1 : 1;
             });
+
             let html = `<table class="admin-table"><tr><th>Status</th><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>ใช้งานล่าสุด</th></tr>`;
             studentsList.forEach(s => {
                 let statusIcon = s.isOnline ? `<i class="fa-solid fa-circle" style="color:#00ff41;"></i> (กำลังเล่น)` : `<i class="fa-regular fa-circle" style="color:#555;"></i> (ออฟไลน์)`;
@@ -664,6 +644,7 @@ function viewTeacher(v) {
                 <th colspan="4" style="text-align:center; background:rgba(0,255,255,0.1);">ก่อนกลางภาค</th><th rowspan="2">กลางภาค(20)</th>
                 <th colspan="4" style="text-align:center; background:rgba(255,204,0,0.1);">หลังกลางภาค</th><th rowspan="2">ปลายภาค(20)</th><th rowspan="2" style="background:var(--p-green); color:#000;">รวม(100)</th></tr>
                 <tr><th>ช.1(10)</th><th>ช.2(10)</th><th>ช.3(10)</th><th style="color:var(--aqua);">รวม(30)</th><th>ช.4(10)</th><th>ช.5(10)</th><th>ช.6(10)</th><th style="color:#ffcc00;">รวม(30)</th></tr>`;
+            
             studentsList.forEach(s => {
                 let sc = s.scores || {s1:0,s2:0,s3:0,mid:0,s4:0,s5:0,s6:0,final:0};
                 let preMid = (parseFloat(sc.s1)||0) + (parseFloat(sc.s2)||0) + (parseFloat(sc.s3)||0);
@@ -684,7 +665,39 @@ function viewTeacher(v) {
                     <td id="tot_${s.studentId}" class="grade-total" style="color:#00ff41; font-size:16px;">${total}</td>
                 </tr>`;
             });
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#00ff41;">ระบบบันทึกคะแนน (พิมพ์ปุ๊บ เซฟปั๊บ)</h3>` + html + "</table></div>";
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#00ff41;">ระบบบันทึกคะแนน</h3>` + html + "</table></div>";
+        });
+    }
+    else if (v === 'assignments') {
+        db.collection("students").where("studentId", "!=", TEACHER_ID).get().then(snap => {
+            let studentsList = [];
+            snap.forEach(doc => studentsList.push(doc.data()));
+            studentsList.sort((a,b) => {
+                if(a.room === b.room) return (parseInt(a.number)||0) - (parseInt(b.number)||0);
+                return (a.room||"").localeCompare(b.room||"");
+            });
+
+            let html = `<div style="overflow-x:auto;"><table class="admin-table" style="min-width:1000px;">
+                <tr><th>ห้อง</th><th>เลขที่</th><th>ชื่อ-สกุล</th>
+                <th>U1-M1</th><th>U1-M2</th><th>U2-M1</th><th>U2-M2</th><th>U3-M1</th><th>U3-M2</th></tr>`;
+            
+            const missions = ['unit1_m1', 'unit1_m2', 'unit2_m1', 'unit2_m2', 'unit3_m1', 'unit3_m2'];
+
+            studentsList.forEach(s => {
+                let sm = s.submittedMissions || [];
+                let row = `<tr><td>${s.room||'-'}</td><td>${s.number||'-'}</td><td style="white-space:nowrap;">${s.name}</td>`;
+                
+                missions.forEach(m => {
+                    if (sm.includes(m)) {
+                        row += `<td><button class="btn-p" style="background:#00ff41; color:#000; padding:5px 10px; font-size:10px; white-space:nowrap;" onclick="returnWork('${s.studentId}', '${m}', '${s.name}')">✅ ส่งแล้ว<br>(คลิกคืนงาน)</button></td>`;
+                    } else {
+                        row += `<td style="color:#555; text-align:center; font-size:10px;">❌ ยังไม่ส่ง</td>`;
+                    }
+                });
+                row += `</tr>`;
+                html += row;
+            });
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px; color:#ff33cc;">สถานะการส่งงาน & คืนงานให้นักเรียน</h3>` + html + `</table></div>`;
         });
     }
     else if (v === 'announcements') {
@@ -724,32 +737,21 @@ function viewTeacher(v) {
     }
 }
 
-// Teacher Specific Chat
-function openTeacherChat(stuId, stuName) {
-    const win = document.getElementById('t-chat-window');
-    win.innerHTML = `<h4 style="margin-top:0; color:var(--aqua);">แชทกับ: ${stuName}</h4><div id="t-chat-msgs" style="flex-grow:1; overflow-y:auto; background:#111; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:10px; font-size:13px; margin-bottom:10px;"></div><div style="display:flex; gap:10px;"><input type="text" id="t-chat-input" placeholder="ตอบกลับนักเรียน..." style="margin:0; padding:10px;"><button class="btn-p" style="padding:10px;" onclick="sendTeacherMsg('${stuId}')"><i class="fa-solid fa-paper-plane"></i></button></div>`;
-    if(teacherChatUnsubscribe) teacherChatUnsubscribe();
-    currentTeacherChatId = stuId;
-    teacherChatUnsubscribe = db.collection("chats").doc(stuId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
-        const box = document.getElementById('t-chat-msgs');
-        if(!box) return; box.innerHTML = "";
-        snap.forEach(doc => {
-            let m = doc.data(); let align = m.sender === 'teacher' ? 'self-end' : 'self-start'; let bg = m.sender === 'teacher' ? 'var(--p-green)' : 'rgba(0,255,255,0.1)'; let color = m.sender === 'teacher' ? '#000' : '#fff';
-            box.innerHTML += `<div style="align-self:${align}; background:${bg}; color:${color}; padding:10px 15px; border-radius:15px; max-width:80%;">${m.text}</div>`;
-        });
-        box.scrollTop = box.scrollHeight;
+// System Data Controls
+function returnWork(studentId, missionId, studentName) {
+    if(!confirm(`ต้องการคืนงาน ${missionId} ให้ ${studentName} กลับไปทำใหม่ใช่หรือไม่? (สถานะส่งงานจะถูกยกเลิก)`)) return;
+    db.collection("students").doc(studentId).get().then(doc => {
+        let s = doc.data();
+        let sm = s.submittedMissions || [];
+        let index = sm.indexOf(missionId);
+        if (index > -1) {
+            sm.splice(index, 1);
+            db.collection("students").doc(studentId).update({ submittedMissions: sm }).then(() => {
+                alert("คืนงานสำเร็จ! นักเรียนสามารถส่งงานใหม่ได้แล้ว"); viewTeacher('assignments');
+            });
+        }
     });
 }
-function sendTeacherMsg(stuId) {
-    const input = document.getElementById('t-chat-input');
-    const text = input.value.trim();
-    if(!text) return;
-    db.collection("chats").doc(stuId).collection("messages").add({ sender: 'teacher', text: text, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-    db.collection("chats").doc(stuId).update({ lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
-    input.value = "";
-}
-
-// System Data Controls
 function saveStudentProfile(id) {
     const room = document.getElementById(`r_${id}`).value; const num = document.getElementById(`n_${id}`).value; const name = document.getElementById(`name_${id}`).value;
     const lv = parseInt(document.getElementById(`lv_${id}`).value)||1; const exp = parseInt(document.getElementById(`exp_${id}`).value)||0; const mp = parseInt(document.getElementById(`mp_${id}`).value)||0;
