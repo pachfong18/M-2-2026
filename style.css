@@ -73,6 +73,12 @@ input, select {
 }
 input:focus, select:focus { outline: none; border-color: var(--aqua); box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
 
+/* Grading Inputs Styles */
+.grade-input { width: 50px; padding: 5px; margin: 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; text-align: center; border-radius: 4px; font-size: 12px;}
+.grade-input:focus { border-color: var(--p-green); box-shadow: 0 0 10px rgba(0,255,65,0.3); }
+.edit-input { width: 80px; padding: 5px; margin: 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 4px; font-size: 12px;}
+.name-input { width: 150px; padding: 5px; margin: 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 4px; font-size: 12px;}
+
 .btn-p { 
     background: var(--aqua); color: #000; border: none;
     padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;
@@ -81,7 +87,7 @@ input:focus, select:focus { outline: none; border-color: var(--aqua); box-shadow
 .btn-danger { background: transparent; border: 2px solid var(--alert-red); color: var(--alert-red); }
 .btn-danger:hover { background: var(--alert-red); color: #fff; box-shadow: 0 0 15px var(--alert-red); }
 
-/* Murdle Table Styles 4x4x4 */
+/* Murdle Table Styles */
 .murdle-grid { border-collapse: collapse; background: rgba(0,0,0,0.4); color: #fff; margin: 20px 0; width: 100%; border-radius: 10px; overflow: hidden; }
 .murdle-grid th, .murdle-grid td { border: 1px solid #444; padding: 10px; text-align: center; font-size: 10px; }
 .murdle-grid th { background: rgba(0, 255, 255, 0.1); color: var(--aqua); font-weight: normal; }
@@ -104,5 +110,5 @@ input:focus, select:focus { outline: none; border-color: var(--aqua); box-shadow
 .auth-link:hover { color: #fff; }
 
 table.admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-table.admin-table th, table.admin-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--glass-border); }
-table.admin-table th { font-size: 12px; color: var(--aqua); background: rgba(0,0,0,0.5); }
+table.admin-table th, table.admin-table td { padding: 10px; text-align: center; border-bottom: 1px solid var(--glass-border); font-size: 12px; }
+table.admin-table th { color: var(--aqua); background: rgba(0,0,0,0.5); }
