@@ -30,7 +30,6 @@ const TEACHER_ID = "pchrkr007";
 let teacherChatUnsubscribe = null;
 let currentTeacherChatId = null;
 
-// ไอเท็มร้านค้า
 const SHOP_ITEMS = [
     { id: "title_1", name: "[ฉายา] ผู้กล้าฝึกหัด", cost: 50, type: "title", value: "ผู้กล้าฝึกหัด", icon: "fa-shield-halved" },
     { id: "title_2", name: "[ฉายา] จ้าวแห่งบั๊ก", cost: 150, type: "title", value: "จ้าวแห่งบั๊ก", icon: "fa-bug" },
@@ -67,7 +66,7 @@ function register() {
     auth.createUserWithEmailAndPassword(id + "@srisuvit.com", pass).then(res => {
         db.collection("students").doc(id).set({ 
             name: name, studentId: id, number: "", room: "ม.2/", level: 1, exp: 0, mana: 0, rank: "Novice", 
-            caseAnswer: {who:"",where:"",what:""}, completedBosses: [], submittedMissions: [],
+            caseAnswer: {who:"",where:"",what:""}, completedBosses: [], submittedMissions: [], returnedMissions: [],
             scores: {s1:0, s2:0, s3:0, mid:0, s4:0, s5:0, s6:0, final:0},
             inventory: [], equippedTitle: "", equippedIcon: "", equippedGlow: "", equippedFrame: "",
             lastActive: firebase.firestore.FieldValue.serverTimestamp()
@@ -214,15 +213,19 @@ function showPage(id, btn) {
     if (id === 'dashboard') {
         let pendingTasksHTML = "";
         const sm = userData.submittedMissions || [];
-        if (questStatus.unit1_m1 && !sm.includes('unit1_m1')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 1</li>";
-        if (questStatus.unit1_m2 && !sm.includes('unit1_m2')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 2</li>";
-        if (questStatus.unit2_m1 && !sm.includes('unit2_m1')) pendingTasksHTML += "<li>📄 Unit 2 - อัปโหลดงานชิ้นที่ 1</li>";
-        if (questStatus.unit2_m2 && !sm.includes('unit2_m2')) pendingTasksHTML += "<li>📄 Unit 2 - อัปโหลดงานชิ้นที่ 2</li>";
-        if (questStatus.unit3_m1 && !sm.includes('unit3_m1')) pendingTasksHTML += "<li>📄 Unit 3 - อัปโหลดงานชิ้นที่ 1</li>";
-        if (questStatus.unit3_m2 && !sm.includes('unit3_m2')) pendingTasksHTML += "<li>📄 Unit 3 - อัปโหลดงานชิ้นที่ 2</li>";
+        const rm = userData.returnedMissions || [];
+        
+        // เช็คว่าถ้ายังไม่ได้ส่ง (ไม่อยู่ใน sm) และยังไม่ได้ตรวจคืน (ไม่อยู่ใน rm) = ค้างงาน
+        if (questStatus.unit1_m1 && !sm.includes('unit1_m1') && !rm.includes('unit1_m1')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 1</li>";
+        if (questStatus.unit1_m2 && !sm.includes('unit1_m2') && !rm.includes('unit1_m2')) pendingTasksHTML += "<li>📄 Unit 1 - อัปโหลดงานชิ้นที่ 2</li>";
+        if (questStatus.unit2_m1 && !sm.includes('unit2_m1') && !rm.includes('unit2_m1')) pendingTasksHTML += "<li>📄 Unit 2 - อัปโหลดงานชิ้นที่ 1</li>";
+        if (questStatus.unit2_m2 && !sm.includes('unit2_m2') && !rm.includes('unit2_m2')) pendingTasksHTML += "<li>📄 Unit 2 - อัปโหลดงานชิ้นที่ 2</li>";
+        if (questStatus.unit3_m1 && !sm.includes('unit3_m1') && !rm.includes('unit3_m1')) pendingTasksHTML += "<li>📄 Unit 3 - อัปโหลดงานชิ้นที่ 1</li>";
+        if (questStatus.unit3_m2 && !sm.includes('unit3_m2') && !rm.includes('unit3_m2')) pendingTasksHTML += "<li>📄 Unit 3 - อัปโหลดงานชิ้นที่ 2</li>";
         if (questStatus.boss_unit1 && !(userData.completedBosses || []).includes('unit1')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 1 แนวคิดเชิงคำนวณ</li>";
         if (questStatus.boss_unit2 && !(userData.completedBosses || []).includes('unit2')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 2 การออกแบบอัลกอริทึม</li>";
         if (questStatus.boss_unit3 && !(userData.completedBosses || []).includes('unit3')) pendingTasksHTML += "<li>🔥 บอสค้าง: Unit 3 การเขียนโปรแกรม</li>";
+        
         const hasAns = userData.caseAnswer && userData.caseAnswer.who;
         if (!caseStatus.isRevealed && !hasAns) pendingTasksHTML += "<li>🕵️‍♂️ แฟ้มคดี: ยังไม่ได้ระบุตัวคนร้าย!</li>";
         if (pendingTasksHTML === "") pendingTasksHTML = "<li style='color:var(--aqua);'>ไม่มีงานค้าง! พักผ่อนได้เลยนักรบ</li>";
@@ -417,25 +420,6 @@ function showPage(id, btn) {
     }
 }
 
-// --- Shop Equipment Logic ---
-function buyItem(id, cost) {
-    if(!confirm("ยืนยันการซื้อไอเทมนี้ด้วย " + cost + " MP?")) return;
-    let inv = userData.inventory || []; inv.push(id);
-    db.collection("students").doc(userData.studentId).update({ mana: userData.mana - cost, inventory: inv }).then(() => {
-        alert("ซื้อสำเร็จ!"); showPage('shop', document.querySelectorAll('.nav-btn')[4]);
-    });
-}
-function equipItem(id, type, val) {
-    let updateData = {};
-    if(type === 'title') updateData.equippedTitle = val;
-    if(type === 'icon') updateData.equippedIcon = val;
-    if(type === 'glow') updateData.equippedGlow = val;
-    if(type === 'frame') updateData.equippedFrame = val;
-    db.collection("students").doc(userData.studentId).update(updateData).then(() => {
-        alert("สวมใส่ไอเท็มแล้ว! ไปดูที่หน้า Character ได้เลย"); showPage('shop', document.querySelectorAll('.nav-btn')[4]);
-    });
-}
-
 // --- Quest Board & Google Drive Upload ---
 function renderQuestCard(unitNum, title, isUnlocked) {
     if(!isUnlocked) return `<div class="content-card" style="min-height:auto; padding:30px; opacity:0.5; border-color:#555;"><div style="font-size:30px; text-align:right; color:#555;"><i class="fa-solid fa-lock"></i></div><h3 class="pixel-font" style="font-size:12px; color:#888;">Unit ${unitNum}: ${title}</h3><p style="font-size:12px; color:#888;">ยังไม่ถึงเวลาเปิดภารกิจ</p></div>`;
@@ -444,18 +428,29 @@ function renderQuestCard(unitNum, title, isUnlocked) {
 
 function openQuestDetail(u) {
     const sm = userData.submittedMissions || [];
+    const rm = userData.returnedMissions || [];
     const isBossCompleted = (userData.completedBosses || []).includes(u);
     const isBossOpen = questStatus['boss_' + u];
     
     let m1HTML = ""; let m2HTML = "";
     if (questStatus[`${u}_m1`]) {
-        if (sm.includes(`${u}_m1`)) m1HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 1 เรียบร้อยแล้ว</div>`;
-        else m1HTML = `<input type="file" id="file_${u}_m1" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m1', '${u}_m1')">UPLOAD TO DRIVE</button>`;
+        if (rm.includes(`${u}_m1`)) {
+            m1HTML = `<div style="color:#33ccff; text-align:center; padding:10px; border:1px dashed #33ccff;">🔄 ตรวจและส่งคืนแล้ว</div>`;
+        } else if (sm.includes(`${u}_m1`)) {
+            m1HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 1 เรียบร้อยแล้ว</div>`;
+        } else {
+            m1HTML = `<input type="file" id="file_${u}_m1" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m1', '${u}_m1')">UPLOAD TO DRIVE</button>`;
+        }
     } else m1HTML = `<div style="color:#888; text-align:center; padding:10px;">🔒 ครูเบียร์ยังไม่เปิดรับงานนี้</div>`;
 
     if (questStatus[`${u}_m2`]) {
-        if (sm.includes(`${u}_m2`)) m2HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 2 เรียบร้อยแล้ว</div>`;
-        else m2HTML = `<input type="file" id="file_${u}_m2" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m2', '${u}_m2')">UPLOAD TO DRIVE</button>`;
+        if (rm.includes(`${u}_m2`)) {
+            m2HTML = `<div style="color:#33ccff; text-align:center; padding:10px; border:1px dashed #33ccff;">🔄 ตรวจและส่งคืนแล้ว</div>`;
+        } else if (sm.includes(`${u}_m2`)) {
+            m2HTML = `<div style="color:#00ff41; text-align:center; padding:10px; border:1px dashed #00ff41;">✅ ส่งงานชิ้นที่ 2 เรียบร้อยแล้ว</div>`;
+        } else {
+            m2HTML = `<input type="file" id="file_${u}_m2" style="background:#000;"><button class="btn-p pixel-font" style="font-size:9px; padding:10px;" onclick="uploadDrive('file_${u}_m2', '${u}_m2')">UPLOAD TO DRIVE</button>`;
+        }
     } else m2HTML = `<div style="color:#888; text-align:center; padding:10px;">🔒 ครูเบียร์ยังไม่เปิดรับงานนี้</div>`;
 
     let bossSectionHTML = "";
@@ -550,7 +545,6 @@ function submitBoss(u) {
     db.collection("students").doc(userData.studentId).update({ mana: userData.mana + mpGain, completedBosses: completedArr }).then(() => showPage('quests', document.querySelectorAll('.nav-btn')[2]));
 }
 
-// --- MURDLE HELPER ---
 function getCell(r, c, isBorder=false) {
     let val = window.murdleState[`r${r}c${c}`] || "";
     let cls = val === 'O' ? 'yes' : (val === 'X' ? 'no' : '');
@@ -572,6 +566,23 @@ function saveCaseAnswer() {
     const what = document.getElementById('ansWhat').value;
     if(!who || !where || !what) return alert("ข้อมูลไม่ครบ!");
     db.collection("students").doc(userData.studentId).update({ caseAnswer: {who:who, where:where, what:what} }).then(() => alert("บันทึกสำเร็จ!"));
+}
+
+function returnWork(studentId, missionId, studentName) {
+    if(!confirm(`ต้องการคืนงาน ${missionId} ให้ ${studentName} ใช่หรือไม่? (สถานะจะเปลี่ยนเป็นตรวจแล้ว/ส่งคืนแล้ว)`)) return;
+    db.collection("students").doc(studentId).get().then(doc => {
+        let s = doc.data();
+        let sm = s.submittedMissions || [];
+        let rm = s.returnedMissions || [];
+        let index = sm.indexOf(missionId);
+        if (index > -1) {
+            sm.splice(index, 1);
+            if (!rm.includes(missionId)) rm.push(missionId);
+            db.collection("students").doc(studentId).update({ submittedMissions: sm, returnedMissions: rm }).then(() => {
+                alert("เปลี่ยนสถานะเป็นส่งคืนแล้วสำเร็จ!"); viewTeacher('assignments');
+            });
+        }
+    });
 }
 
 // --- TEACHER VIEWS ---
@@ -685,11 +696,14 @@ function viewTeacher(v) {
 
             studentsList.forEach(s => {
                 let sm = s.submittedMissions || [];
+                let rm = s.returnedMissions || [];
                 let row = `<tr><td>${s.room||'-'}</td><td>${s.number||'-'}</td><td style="white-space:nowrap;">${s.name}</td>`;
                 
                 missions.forEach(m => {
-                    if (sm.includes(m)) {
-                        row += `<td><button class="btn-p" style="background:#00ff41; color:#000; padding:5px 10px; font-size:10px; white-space:nowrap;" onclick="returnWork('${s.studentId}', '${m}', '${s.name}')">✅ ส่งแล้ว<br>(คลิกคืนงาน)</button></td>`;
+                    if (rm.includes(m)) {
+                        row += `<td style="color:#33ccff; text-align:center; font-size:10px;">🔄 ส่งคืนแล้ว</td>`;
+                    } else if (sm.includes(m)) {
+                        row += `<td><button class="btn-p" style="background:#00ff41; color:#000; padding:5px 10px; font-size:10px; white-space:nowrap;" onclick="returnWork('${s.studentId}', '${m}', '${s.name}')">✅ ส่งแล้ว<br>(คลิกเพื่อตรวจ/คืนงาน)</button></td>`;
                     } else {
                         row += `<td style="color:#555; text-align:center; font-size:10px;">❌ ยังไม่ส่ง</td>`;
                     }
@@ -736,54 +750,3 @@ function viewTeacher(v) {
         box.innerHTML = `<div style="background:rgba(0,255,255,0.1); border:1px solid var(--aqua); padding:20px; border-radius:10px; margin-bottom:20px;"><h3 class="pixel-font" style="font-size:12px; color:var(--aqua);">เปิด/ปิด การส่งงาน (ภารกิจย่อย)</h3><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 1: แนวคิดเชิงคำนวณ</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1_m1?'var(--aqua)':'#444'}; color:${questStatus.unit1_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit1_m2?'var(--aqua)':'#444'}; color:${questStatus.unit1_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1_m2')">ภารกิจ 2</button></div><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 2: การออกแบบอัลกอริทึม</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit2_m1?'var(--aqua)':'#444'}; color:${questStatus.unit2_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2_m2?'var(--aqua)':'#444'}; color:${questStatus.unit2_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2_m2')">ภารกิจ 2</button></div><p style="font-size:12px; color:#aaa; margin-top:15px;">UNIT 3: Python</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit3_m1?'var(--aqua)':'#444'}; color:${questStatus.unit3_m1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m1')">ภารกิจ 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit3_m2?'var(--aqua)':'#444'}; color:${questStatus.unit3_m2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3_m2')">ภารกิจ 2</button></div><hr style="border-color:#444; margin:20px 0;"><p style="font-size:12px; color:#aaa;">เปิดประตูใหญ่ (ปลดล็อค Unit)</p><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; background:${questStatus.unit1?'var(--p-green)':'#444'}; color:${questStatus.unit1?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit1')">ปลดล็อค Unit 1</button><button class="btn-p" style="flex:1; background:${questStatus.unit2?'var(--p-green)':'#444'}; color:${questStatus.unit2?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit2')">ปลดล็อค Unit 2</button><button class="btn-p" style="flex:1; background:${questStatus.unit3?'var(--p-green)':'#444'}; color:${questStatus.unit3?'#000':'#fff'}; font-size:10px;" onclick="toggleSetting('quest_board', 'unit3')">ปลดล็อค Unit 3</button></div></div><div style="background:rgba(255,51,102,0.1); border:1px solid var(--alert-red); padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:var(--alert-red);">เปิด/ปิด สอบบอสไฟต์</h3><div style="display:flex; gap:10px;"><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit1?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit1?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit1')">Boss 1</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit2?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit2?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit2')">Boss 2</button><button class="btn-p" style="flex:1; border-color:var(--alert-red); background:${questStatus.boss_unit3?'var(--alert-red)':'#444'}; color:${questStatus.boss_unit3?'#fff':'#aaa'};" onclick="toggleSetting('quest_board', 'boss_unit3')">Boss 3</button></div></div>`;
     }
 }
-
-// System Data Controls
-function returnWork(studentId, missionId, studentName) {
-    if(!confirm(`ต้องการคืนงาน ${missionId} ให้ ${studentName} กลับไปทำใหม่ใช่หรือไม่? (สถานะส่งงานจะถูกยกเลิก)`)) return;
-    db.collection("students").doc(studentId).get().then(doc => {
-        let s = doc.data();
-        let sm = s.submittedMissions || [];
-        let index = sm.indexOf(missionId);
-        if (index > -1) {
-            sm.splice(index, 1);
-            db.collection("students").doc(studentId).update({ submittedMissions: sm }).then(() => {
-                alert("คืนงานสำเร็จ! นักเรียนสามารถส่งงานใหม่ได้แล้ว"); viewTeacher('assignments');
-            });
-        }
-    });
-}
-function saveStudentProfile(id) {
-    const room = document.getElementById(`r_${id}`).value; const num = document.getElementById(`n_${id}`).value; const name = document.getElementById(`name_${id}`).value;
-    const lv = parseInt(document.getElementById(`lv_${id}`).value)||1; const exp = parseInt(document.getElementById(`exp_${id}`).value)||0; const mp = parseInt(document.getElementById(`mp_${id}`).value)||0;
-    db.collection("students").doc(id).update({ room: room, number: num, name: name, level: lv, exp: exp, mana: mp }).then(() => alert("อัปเดตข้อมูลสำเร็จ!"));
-}
-function updateGrade(id) {
-    let s1 = parseFloat(document.getElementById(`s1_${id}`).value)||0; let s2 = parseFloat(document.getElementById(`s2_${id}`).value)||0; let s3 = parseFloat(document.getElementById(`s3_${id}`).value)||0; let mid = parseFloat(document.getElementById(`mid_${id}`).value)||0; let s4 = parseFloat(document.getElementById(`s4_${id}`).value)||0; let s5 = parseFloat(document.getElementById(`s5_${id}`).value)||0; let s6 = parseFloat(document.getElementById(`s6_${id}`).value)||0; let fin = parseFloat(document.getElementById(`fin_${id}`).value)||0;
-    let pre = s1+s2+s3; let post = s4+s5+s6; let total = pre+post+mid+fin;
-    document.getElementById(`pre_${id}`).innerText = pre; document.getElementById(`post_${id}`).innerText = post; document.getElementById(`tot_${id}`).innerText = total;
-    db.collection("students").doc(id).update({ scores: { s1:s1, s2:s2, s3:s3, mid:mid, s4:s4, s5:s5, s6:s6, final:fin } });
-}
-function loadLessonEditor(u) {
-    const area = document.getElementById('lesson-editor-area'); if(!u) return area.innerHTML = ""; const items = lessonsData[u] || []; let html = ``;
-    items.forEach((item, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><input type="text" value="${item.title}" placeholder="ชื่อสื่อ" onchange="lessonsData['${u}'][${i}].title=this.value"><select onchange="lessonsData['${u}'][${i}].type=this.value"><option value="youtube" ${item.type==='youtube'?'selected':''}>YouTube URL</option><option value="image" ${item.type==='image'?'selected':''}>Image URL</option><option value="link" ${item.type==='link'?'selected':''}>Link Web</option></select><input type="text" value="${item.url}" placeholder="URL" onchange="lessonsData['${u}'][${i}].url=this.value"><button class="btn-p btn-danger" style="padding:10px; font-size:10px;" onclick="lessonsData['${u}'].splice(${i},1); loadLessonEditor('${u}');">ลบ</button></div>`; });
-    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="if(!lessonsData['${u}']) lessonsData['${u}']=[]; lessonsData['${u}'].push({title:'',type:'youtube',url:''}); loadLessonEditor('${u}');">+ เพิ่มสื่อ</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('lessons').set(lessonsData).then(()=>alert('บันทึกสำเร็จ!'))">💾 เซฟ</button></div>`;
-    area.innerHTML = html;
-}
-function loadEditor(u) {
-    const area = document.getElementById('editor-area'); if(!u) return area.innerHTML = ""; const qs = quizData[u] || []; let html = ``;
-    qs.forEach((q, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><strong style="color:var(--accent-gold);">ข้อ ${i+1}</strong><input type="text" value="${q.q}" placeholder="โจทย์" onchange="updateQ('${u}',${i},'q',this.value)"><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><input type="text" value="${q.a}" placeholder="A" onchange="updateQ('${u}',${i},'a',this.value)"><input type="text" value="${q.b}" placeholder="B" onchange="updateQ('${u}',${i},'b',this.value)"><input type="text" value="${q.c}" placeholder="C" onchange="updateQ('${u}',${i},'c',this.value)"><input type="text" value="${q.d}" placeholder="D" onchange="updateQ('${u}',${i},'d',this.value)"></div>เฉลย: <select style="width:100px; padding:10px;" onchange="updateQ('${u}',${i},'key',this.value)"><option value="A" ${q.key==='A'?'selected':''}>A</option><option value="B" ${q.key==='B'?'selected':''}>B</option><option value="C" ${q.key==='C'?'selected':''}>C</option><option value="D" ${q.key==='D'?'selected':''}>D</option></select><button class="btn-p btn-danger" style="padding:10px; font-size:10px; margin-left:10px;" onclick="quizData['${u}'].splice(${i},1); loadEditor('${u}');">ลบข้อนี้</button></div>`; });
-    html += `<div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-p" style="font-size:10px; background:transparent; border:2px solid var(--aqua); color:var(--aqua);" onclick="addQ('${u}')">+ เพิ่มข้อใหม่</button><button class="btn-p" style="font-size:10px;" onclick="db.collection('settings').doc('quizzes').set(quizData).then(()=>alert('บันทึกสำเร็จ!'))">💾 เซฟ</button></div>`;
-    area.innerHTML = html;
-}
-function updateQ(u, i, f, v) { quizData[u][i][f] = v; }
-function addQ(u) { if(!quizData[u]) quizData[u]=[]; quizData[u].push({q:'',a:'',b:'',c:'',d:'',key:'A'}); loadEditor(u); }
-function toggleSetting(col, key) { let target = col === 'quest_board' ? questStatus : caseStatus; db.collection("settings").doc(col).update({ [key]: !target[key] }).then(() => viewTeacher(col==='quest_board'?'quests':'detective')); }
-function toggleClue(index) { let newToggles = [...caseStatus.cluesToggle]; newToggles[index] = !newToggles[index]; db.collection("settings").doc("monthly_case").update({ cluesToggle: newToggles }).then(() => viewTeacher('detective')); }
-function changeActiveCase(caseIdx) { if(!confirm("เปลี่ยนคดีจะรีเซ็ตคำใบ้และปิดการเฉลย ยืนยันไหม?")) return viewTeacher('detective'); db.collection("settings").doc("monthly_case").update({ activeCaseId: parseInt(caseIdx), cluesToggle: [false,false,false,false,false,false,false,false,false,false], isRevealed: false }).then(() => viewTeacher('detective')); }
-
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden && window.isDoingQuiz && userData && userData.studentId !== TEACHER_ID) {
-        db.collection("anti_cheat_alerts").add({ studentName: userData.name, action: "สลับจอ", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        alert("🚨 [SYSTEM ALERT] ครูเบียร์เห็นนะ! ตรวจพบการพับหน้าจอระหว่างทำภารกิจ!");
-    }
-});
