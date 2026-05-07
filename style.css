@@ -31,7 +31,7 @@ body {
 .nav-btn.teacher-btn { color: #ffcc00; border-color: rgba(255, 204, 0, 0.3); }
 .nav-btn.teacher-btn:hover { border-color: #ffcc00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.3); }
 
-.main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+.main-content { flex-grow: 1; padding: 40px; overflow-y: auto; position: relative; }
 .content-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 40px; min-height: 80vh; box-shadow: 0 20px 50px rgba(0,0,0,0.3); position: relative; }
 .aqua-glow { color: var(--aqua); text-shadow: 0 0 10px var(--aqua); }
 
@@ -45,7 +45,7 @@ input:focus, select:focus { outline: none; border-color: var(--aqua); box-shadow
 .btn-danger { background: transparent; border: 2px solid var(--alert-red); color: var(--alert-red); }
 .btn-danger:hover { background: var(--alert-red); color: #fff; box-shadow: 0 0 15px var(--alert-red); }
 
-/* Murdle Table Styles 4x4x4 */
+/* Murdle Table Styles */
 .murdle-grid { border-collapse: collapse; background: rgba(0,0,0,0.4); color: #fff; margin: 20px 0; width: 100%; border-radius: 10px; overflow: hidden; }
 .murdle-grid th, .murdle-grid td { border: 1px solid #444; padding: 10px; text-align: center; font-size: 10px; }
 .murdle-grid th { background: rgba(0, 255, 255, 0.1); color: var(--aqua); font-weight: normal; }
@@ -63,19 +63,19 @@ table.admin-table th { color: var(--aqua); background: rgba(0,0,0,0.5); }
 .edit-input, .name-input { padding: 5px; margin: 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 4px; font-size: 12px;}
 
 /* Shop Item Card */
-.shop-card { background: rgba(255,204,0,0.05); border: 1px solid #ffcc00; border-radius: 10px; padding: 20px; text-align: center; position: relative; overflow: hidden;}
-.shop-card i { font-size: 40px; color: #ffcc00; margin-bottom: 10px; filter: drop-shadow(0 0 10px #ffcc00);}
-.shop-price { background: #000; color: var(--aqua); display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; margin: 10px 0; border: 1px solid var(--aqua);}
+.shop-card { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; padding: 20px; text-align: center; position: relative; overflow: hidden;}
+.shop-card i { font-size: 35px; color: var(--aqua); margin-bottom: 10px; filter: drop-shadow(0 0 10px var(--aqua));}
+.shop-price { background: #000; color: #ffcc00; display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; margin: 10px 0; border: 1px solid #ffcc00;}
 
 /* Floating Chat Widget */
 #chat-fab { position: fixed; bottom: 50px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--aqua); color: #000; font-size: 24px; border: none; cursor: pointer; box-shadow: 0 0 20px var(--aqua); z-index: 1000; display: flex; align-items: center; justify-content: center; }
 #chat-fab:hover { transform: scale(1.1); }
-#chat-widget { position: fixed; bottom: 120px; right: 30px; width: 350px; height: 450px; background: rgba(10,15,20,0.95); backdrop-filter: blur(20px); border: 1px solid var(--aqua); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; z-index: 1000; overflow: hidden;}
-.chat-header { background: rgba(0,255,255,0.1); padding: 15px; border-bottom: 1px solid var(--aqua); font-size: 10px; }
+#chat-widget { position: fixed; bottom: 120px; right: 30px; width: 350px; height: 450px; background: rgba(10,15,20,0.95); backdrop-filter: blur(20px); border: 1px solid var(--aqua); border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; z-index: 1000; overflow: hidden;}
+.chat-header { background: rgba(0,255,255,0.1); padding: 15px; border-bottom: 1px solid var(--aqua); font-size: 10px; display:flex; justify-content:space-between; align-items:center;}
 #chat-history { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
 .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; line-height: 1.4; word-wrap: break-word;}
 .msg.teacher { background: rgba(255,204,0,0.1); border: 1px solid #ffcc00; align-self: flex-start; border-bottom-left-radius: 0; color: #ffcc00;}
-.msg.me { background: var(--p-green); color: #000; align-self: flex-end; border-bottom-right-radius: 0; }
+.msg.me { background: var(--aqua); color: #000; align-self: flex-end; border-bottom-right-radius: 0; font-weight:bold; }
 .chat-input-area { padding: 10px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; background: rgba(0,0,0,0.5); }
 .chat-input-area input { margin: 0; padding: 10px; border-radius: 20px; }
 .chat-input-area button { background: var(--aqua); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; color: #000; }
@@ -84,4 +84,20 @@ table.admin-table th { color: var(--aqua); background: rgba(0,0,0,0.5); }
 .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .lesson-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
 
+/* 🌟 MANA SHOP EFFECTS (ชื่อเรืองแสง & กรอบ) 🌟 */
+.glow-red { color: #ff3366 !important; text-shadow: 0 0 12px #ff3366; font-weight: bold; }
+.glow-blue { color: #33ccff !important; text-shadow: 0 0 12px #33ccff; font-weight: bold; }
+.glow-gold { color: #ffcc00 !important; text-shadow: 0 0 12px #ffcc00; font-weight: bold; }
+.glow-purple { color: #b366ff !important; text-shadow: 0 0 12px #b366ff; font-weight: bold; }
+
+.frame-neon { border: 3px solid var(--aqua) !important; box-shadow: 0 0 20px var(--aqua), inset 0 0 15px var(--aqua) !important; border-radius: 50%; }
+.frame-fire { border: 3px solid #ff3366 !important; box-shadow: 0 0 25px #ff3366, inset 0 0 15px #ff3366 !important; border-radius: 50%; animation: pulseFire 1s infinite alternate; }
+.frame-cyber { border: 3px dashed #ffcc00 !important; box-shadow: 0 0 15px #ffcc00 !important; border-radius: 10% !important; }
+@keyframes pulseFire { 0% { box-shadow: 0 0 10px #ff3366; } 100% { box-shadow: 0 0 30px #ff3366; } }
+
+.stats-box { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; text-align: center; }
+.stats-val { font-size: 24px; font-weight: bold; color: var(--aqua); font-family: 'Press Start 2P'; margin-top: 10px; display: block;}
+
 .hidden { display: none !important; }
+.auth-link { text-align: center; color: #888; cursor: pointer; margin-top: 20px; font-size: 14px; }
+.auth-link:hover { color: #fff; }
