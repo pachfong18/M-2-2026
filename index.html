@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Srisuvit Quest - Kru Beer Version</title>
+    <title>Srisuvit Quest - Aqua Edition</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -18,49 +18,43 @@
 
     <nav class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-glow">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h1 class="pixel-font">Srisuvit<br>Quest v2.0</h1>
+            <div class="logo-glow"><i class="fa-solid fa-ghost"></i></div>
+            <h1 class="pixel-font">Srisuvit<br>Quest v2.1</h1>
         </div>
         
         <div id="menu-items" class="hidden">
-            <div class="nav-btn pixel-font" onclick="showPage('dashboard')"><i class="fa-solid fa-house"></i> Dashboard</div>
-            <div class="nav-btn pixel-font" onclick="showPage('quests')"><i class="fa-solid fa-scroll"></i> Quest Board</div>
-            <div class="nav-btn pixel-font detective-btn" onclick="showPage('detective')"><i class="fa-solid fa-magnifying-glass"></i> Detective</div>
-            <div class="nav-btn pixel-font" onclick="showPage('status')"><i class="fa-solid fa-user-ninja"></i> Character</div>
+            <div class="nav-btn pixel-font active" onclick="showPage('dashboard', this)"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
+            <div class="nav-btn pixel-font" onclick="showPage('quests', this)"><i class="fa-solid fa-map-location-dot"></i> Quest Board</div>
+            <div class="nav-btn pixel-font detective-btn" onclick="showPage('detective', this)"><i class="fa-solid fa-magnifying-glass"></i> Detective</div>
+            <div class="nav-btn pixel-font" onclick="showPage('status', this)"><i class="fa-solid fa-id-card"></i> Character</div>
             
-            <div id="teacher-btn" class="nav-btn pixel-font teacher-btn hidden" onclick="showPage('teacher')">
-                <i class="fa-solid fa-screwdriver-wrench"></i> Kru Beer Panel
+            <div id="teacher-btn" class="nav-btn pixel-font teacher-btn hidden" onclick="showPage('teacher', this)">
+                <i class="fa-solid fa-fingerprint"></i> Kru Beer Panel
             </div>
             
             <div class="nav-btn pixel-font logout-btn" onclick="logout()">
-                <i class="fa-solid fa-power-off"></i> Logout
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
             </div>
-        </div>
-        
-        <div class="footer-credit pixel-font">
-            BUILD BY AI PRO<br>FOR KRU BEER
         </div>
     </nav>
 
     <main class="main-content">
         <div class="content-card">
             <div id="login-section">
-                <h2 class="pixel-font title-glow">>>> Identify Player</h2>
-                <input type="text" id="username" placeholder="Username (รหัสนักเรียน 5 หลัก)">
-                <input type="password" id="password" placeholder="Password">
-                <button class="btn-p pixel-font" style="width:100%; margin-top:10px;" onclick="login()">ENTER THE SYSTEM</button>
-                <p class="auth-link" onclick="toggleAuth('reg')">ยังไม่มีตัวละคร? สมัครเพื่อเริ่มผจญภัย</p>
+                <h2 class="pixel-font aqua-glow">>>> User Login</h2>
+                <input type="text" id="username" placeholder="รหัสนักเรียน 5 หลัก">
+                <input type="password" id="password" placeholder="รหัสผ่าน">
+                <button class="btn-p pixel-font" style="width:100%; margin-top:20px;" onclick="login()">Enter System</button>
+                <p class="auth-link" onclick="toggleAuth('reg')">สร้างตัวละครใหม่</p>
             </div>
 
             <div id="reg-section" class="hidden">
-                <h2 class="pixel-font" style="color:var(--mana-blue); text-shadow: 0 0 10px var(--mana-blue);">>>> New Character</h2>
+                <h2 class="pixel-font" style="color:#fff;">>>> New Character</h2>
                 <input type="text" id="regName" placeholder="ชื่อ-นามสกุลจริง">
-                <input type="text" id="regId" placeholder="เลขประจำตัวนักเรียน 5 หลัก">
+                <input type="text" id="regId" placeholder="รหัสนักเรียน 5 หลัก">
                 <input type="password" id="regPass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)">
-                <button class="btn-p pixel-font" style="width:100%; background:var(--mana-blue); box-shadow: 0 0 15px var(--mana-blue);" onclick="register()">CREATE ACCOUNT</button>
-                <p class="auth-link" onclick="toggleAuth('login')">กลับหน้าล็อกอิน</p>
+                <button class="btn-p pixel-font" style="width:100%;" onclick="register()">Create Account</button>
+                <p class="auth-link" onclick="toggleAuth('login')">มีตัวละครแล้ว? ล็อกอินที่นี่</p>
             </div>
 
             <div id="game-content" class="hidden"></div>
@@ -68,9 +62,9 @@
     </main>
 
     <div class="status-bar">
-        <span><i class="fa-solid fa-id-badge"></i> PLAYER: <span id="st-name">Guest</span></span>
-        <span><i class="fa-solid fa-bolt"></i> MP: <span id="st-mp">0</span> | <i class="fa-solid fa-medal"></i> LV: <span id="st-lv">1</span></span>
-        <span><i class="fa-solid fa-location-dot"></i> SRISUVIT: ม.2</span>
+        <span><i class="fa-solid fa-user-tag"></i> <span id="st-name">...</span></span>
+        <span><i class="fa-solid fa-bolt-lightning"></i> MP: <span id="st-mp">0</span> | LV: <span id="st-lv">1</span></span>
+        <span><i class="fa-solid fa-location-arrow"></i> SRISUVIT M.2</span>
     </div>
 
     <script src="app.js"></script>
