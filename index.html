@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Srisuvit Quest - Ultimate LMS</title>
+    <title>Srisuvit Quest - Ultimate LMS v6.0</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,7 +19,7 @@
     <nav class="sidebar">
         <div class="sidebar-header">
             <div class="logo-glow"><i class="fa-solid fa-ghost"></i></div>
-            <h1 class="pixel-font">Srisuvit<br>Quest v5.5</h1>
+            <h1 class="pixel-font">Srisuvit<br>Quest v6.0</h1>
         </div>
         
         <div id="menu-items" class="hidden">
@@ -27,7 +27,7 @@
             <div class="nav-btn pixel-font" onclick="showPage('lessons', this)"><i class="fa-solid fa-book-open-reader"></i> Lessons</div>
             <div class="nav-btn pixel-font" onclick="showPage('quests', this)"><i class="fa-solid fa-map-location-dot"></i> Quest Board</div>
             <div class="nav-btn pixel-font detective-btn" onclick="showPage('detective', this)"><i class="fa-solid fa-magnifying-glass"></i> Detective</div>
-            <div class="nav-btn pixel-font" style="border-color:#ffcc00; color:#ffcc00;" onclick="showPage('shop', this)"><i class="fa-solid fa-cart-shopping"></i> Mana Shop</div>
+            <div class="nav-btn pixel-font" style="border-color:#ffcc00; color:#ffcc00; text-shadow:0 0 5px #ffcc00;" onclick="showPage('shop', this)"><i class="fa-solid fa-cart-shopping"></i> Mana Shop</div>
             <div class="nav-btn pixel-font" onclick="showPage('status', this)"><i class="fa-solid fa-id-card"></i> Character</div>
             
             <div id="teacher-btn" class="nav-btn pixel-font teacher-btn hidden" onclick="showPage('teacher', this)">
@@ -55,7 +55,7 @@
                 <input type="text" id="regName" placeholder="ชื่อ-นามสกุลจริง">
                 <input type="text" id="regId" placeholder="รหัสนักเรียน 5 หลัก">
                 <input type="password" id="regPass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)">
-                <button class="btn-p pixel-font" style="width:100%;" onclick="register()">Create Account</button>
+                <button class="btn-p pixel-font" style="width:100%; background:var(--aqua);" onclick="register()">Create Account</button>
                 <p class="auth-link" onclick="toggleAuth('login')">มีตัวละครแล้ว? ล็อกอินที่นี่</p>
             </div>
 
@@ -79,7 +79,7 @@
     </div>
 
     <div class="status-bar">
-        <span><i class="fa-solid fa-user-tag"></i> <span id="st-name">...</span> <span id="st-title" style="color:#ffcc00; margin-left:5px;"></span></span>
+        <span><i class="fa-solid fa-user-tag"></i> <span id="st-name-wrapper">...</span> <span id="st-title" style="color:#ffcc00; margin-left:5px;"></span></span>
         <span><i class="fa-solid fa-bolt-lightning"></i> MP: <span id="st-mp">0</span> | LV: <span id="st-lv">1</span></span>
         <span><i class="fa-solid fa-location-arrow"></i> SRISUVIT M.2</span>
     </div>
