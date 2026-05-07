@@ -86,7 +86,7 @@ auth.onAuthStateChanged(user => {
         
         db.collection("students").doc(userId).onSnapshot(doc => {
             userData = doc.data();
-            applyUserCosmetics(); 
+            applyUserCosmetics(); // โหลดฉายาและออร่าลง Status Bar อัตโนมัติ
 
             document.getElementById('st-mp').innerText = userData.mana;
             document.getElementById('st-lv').innerText = userData.level;
@@ -124,6 +124,7 @@ auth.onAuthStateChanged(user => {
     }
 });
 
+// ฟังก์ชันตกแต่งแถบ Status Bar ตลอดเวลา
 function applyUserCosmetics() {
     let titleStr = userData.equippedTitle ? `[${userData.equippedTitle}]` : "";
     let iconStr = userData.equippedIcon ? `<i class="fa-solid ${userData.equippedIcon}" style="margin-right:5px;"></i>` : "";
@@ -131,20 +132,8 @@ function applyUserCosmetics() {
     
     document.getElementById('st-title').innerText = titleStr;
     document.getElementById('st-name-wrapper').innerHTML = `${iconStr}<span class="${glowClass}">${userData.name}</span>`;
-    
-    if(document.getElementById('char-name-disp')) {
-        document.getElementById('char-name-disp').innerHTML = `${iconStr}<span class="${glowClass}">${userData.name}</span>`;
-        let charBox = document.getElementById('char-avatar-box');
-        if(charBox) {
-            charBox.className = "avatar-box " + (userData.equippedFrame || "");
-            charBox.style.width = "100px"; charBox.style.height = "100px"; charBox.style.background = "var(--aqua)";
-            charBox.style.margin = "0 auto 20px auto"; charBox.style.display = "flex"; charBox.style.alignItems = "center";
-            charBox.style.justifyContent = "center"; charBox.style.fontSize = "40px"; charBox.style.color = "#000";
-        }
-    }
 }
 
-// ฟังก์ชันเพิ่ม EXP (ใช้โดยบอสไฟต์)
 function addExp(studentId, amount) {
     let newExp = (userData.exp || 0) + amount;
     let newLevel = userData.level;
@@ -152,16 +141,11 @@ function addExp(studentId, amount) {
     if (newExp >= 100) { newLevel++; newExp -= 100; newMana += 30; alert("🎉 LEVEL UP! ได้รับโบนัส 30 MP!"); }
     db.collection("students").doc(studentId).update({ exp: newExp, level: newLevel, mana: newMana });
 }
-
-// ฟังก์ชันแจก EXP ด่วน (ใช้โดยครูเบียร์ในหน้า Admin)
 function teacherAddExp(id, cExp, cLv, cMp) {
-    let nExp = cExp + 50;
-    let nLv = cLv;
-    let nMp = cMp;
+    let nExp = cExp + 50; let nLv = cLv; let nMp = cMp;
     if(nExp >= 100) { nLv++; nExp -= 100; nMp += 30; }
     db.collection("students").doc(id).update({ exp: nExp, level: nLv, mana: nMp }).then(() => {
-        alert("เพิ่ม 50 EXP ให้รหัส " + id + " สำเร็จ!");
-        viewTeacher('students');
+        alert("เพิ่ม 50 EXP ให้รหัส " + id + " สำเร็จ!"); viewTeacher('students');
     });
 }
 
@@ -171,7 +155,6 @@ function toggleChatWidget() {
     widget.classList.toggle('hidden');
     if(!widget.classList.contains('hidden')) scrollToBottom();
 }
-
 function renderChatHistory() {
     const box = document.getElementById('chat-history');
     box.innerHTML = "";
@@ -186,14 +169,8 @@ function renderChatHistory() {
     }
     scrollToBottom();
 }
-
-function scrollToBottom() {
-    const box = document.getElementById('chat-history');
-    box.scrollTop = box.scrollHeight;
-}
-
+function scrollToBottom() { const box = document.getElementById('chat-history'); box.scrollTop = box.scrollHeight; }
 function handleChatEnter(e) { if(e.key === 'Enter') sendChatMessage(); }
-
 function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const text = input.value.trim();
@@ -202,10 +179,8 @@ function sendChatMessage() {
     db.collection("chats").doc(userData.studentId).set({ studentName: userData.name, lastUpdate: firebase.firestore.FieldValue.serverTimestamp() }, {merge: true});
     input.value = "";
 }
-
 function initTeacherChatListener() {
-    db.collection("chats").doc(userData.studentId).collection("messages").orderBy("timestamp", "asc")
-    .onSnapshot(snap => {
+    db.collection("chats").doc(userData.studentId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
         window.teacherMessages = [];
         snap.forEach(doc => window.teacherMessages.push(doc.data()));
         if(!document.getElementById('chat-widget').classList.contains('hidden')) renderChatHistory();
@@ -219,6 +194,13 @@ function showPage(id, btn) {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     if(btn) btn.classList.add('active');
     window.isDoingQuiz = false;
+
+    // เตรียมตัวแปรของตกแต่งให้พร้อมเรนเดอร์ในหน้าต่างๆ
+    let iconStr = userData.equippedIcon ? `<i class="fa-solid ${userData.equippedIcon}" style="margin-right:8px; color:var(--aqua);"></i>` : "";
+    let glowClass = userData.equippedGlow || "";
+    let frameClass = userData.equippedFrame || "";
+    let displayTitle = userData.equippedTitle || userData.rank;
+    let borderRadius = frameClass === 'frame-cyber' ? '10%' : '50%'; // กรอบไซเบอร์เป็นสี่เหลี่ยม
 
     if (id === 'dashboard') {
         let pendingTasksHTML = "";
@@ -244,7 +226,7 @@ function showPage(id, btn) {
         display.innerHTML = `
             <h2 class="pixel-font aqua-glow">>>> Dashboard</h2>
             <div style="background:rgba(255,255,255,0.05); padding:30px; border-radius:15px; border:1px solid var(--glass-border); line-height:1.8;">
-                <p style="font-size:20px;">ยินดีต้อนรับนักรบไซเบอร์ <span class="${userData.equippedGlow||''}">${userData.name}</span></p>
+                <p style="font-size:20px;">ยินดีต้อนรับ ${iconStr}<span class="${glowClass}">${userData.name}</span></p>
                 <div id="dash-announcements" style="margin-top:20px;">${annHTML}</div>
                 <div style="background:rgba(0,0,0,0.5); padding:15px; border-left:4px solid var(--alert-red); margin-top:20px;">
                     <h3 class="pixel-font" style="font-size:12px; color:var(--alert-red); margin-top:0;">[ PENDING TASKS / งานค้างของคุณ ]</h3>
@@ -365,6 +347,7 @@ function showPage(id, btn) {
                         <tr><th style="background:rgba(0,255,255,0.1);">${currentCase.weapons[3]}</th>${getCell(7,0)} ${getCell(7,1)} ${getCell(7,2)} ${getCell(7,3,true)}</tr>
                     </table>
                 </div>
+
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
                     <div style="background:rgba(0,0,0,0.4); padding:20px; border-radius:10px; border:1px solid #444;">
                         <h3 class="pixel-font" style="font-size:10px; color:var(--accent-gold);">[ เบาะแสที่พบ ]</h3>
@@ -384,19 +367,18 @@ function showPage(id, btn) {
         const intStat = Math.floor(userData.level * 1.5) + 10;
         const agiStat = Math.floor(userData.level * 1.2) + 8;
         const lukStat = Math.floor(userData.level * 2.0) + 5;
-        let iconStr = userData.equippedIcon ? `<i class="fa-solid ${userData.equippedIcon}" style="margin-right:5px;"></i>` : "";
-        let glowClass = userData.equippedGlow || "";
-        let frameClass = userData.equippedFrame || "";
-
+        
         display.innerHTML = `
             <h2 class="pixel-font aqua-glow">>>> Character Profile</h2>
             <div style="display:flex; flex-wrap:wrap; gap:30px; margin-top:20px;">
                 <div style="flex:1; min-width:250px; background:rgba(255,255,255,0.05); padding:30px; border-radius:20px; border:1px solid var(--glass-border); text-align:center;">
-                    <div id="char-avatar-box" class="avatar-box ${frameClass}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000;">
+                    
+                    <div class="avatar-box ${frameClass}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border-radius:${borderRadius};">
                         <i class="fa-solid fa-user-astronaut"></i>
                     </div>
-                    <h3 id="char-name-disp" style="margin:0; font-size:22px;">${iconStr}<span class="${glowClass}">${userData.name}</span></h3>
-                    <p class="pixel-font" style="color:var(--aqua); font-size:10px; margin-top:10px;">${userData.rank}</p>
+                    
+                    <h3 style="margin:0; font-size:22px;">${iconStr}<span class="${glowClass}">${userData.name}</span></h3>
+                    <p class="pixel-font" style="color:#ffcc00; font-size:10px; margin-top:10px; text-shadow:0 0 5px #ffcc00;">${displayTitle}</p>
                     <p style="color:#aaa; font-size:14px;">ID: ${userData.studentId} | ห้อง: ${userData.room||'-'} | เลขที่: ${userData.number||'-'}</p>
                 </div>
                 <div style="flex:2; min-width:300px;">
@@ -418,7 +400,7 @@ function showPage(id, btn) {
             <div style="display:flex; flex-wrap:wrap; gap:10px; margin:20px 0;">
                 <button class="btn-p pixel-font" style="background:#ffcc00; color:#000; font-size:9px;" onclick="viewTeacher('students')">โปรไฟล์เด็ก</button>
                 <button class="btn-p pixel-font" style="background:#00ff41; color:#000; font-size:9px;" onclick="viewTeacher('online')">เช็คออนไลน์</button>
-                <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('grading')">ระบบคะแนน</button>
+                <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('grading')">สมุดคะแนน</button>
                 <button class="btn-p pixel-font" style="background:#fff; color:#000; font-size:9px;" onclick="viewTeacher('chat')">แชท 1-on-1</button>
                 <button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:9px;" onclick="viewTeacher('announcements')">ประกาศ</button>
                 <button class="btn-p pixel-font" style="background:var(--aqua); color:#000; font-size:9px;" onclick="viewTeacher('lessons')">สื่อการสอน</button>
@@ -431,7 +413,7 @@ function showPage(id, btn) {
     }
 }
 
-// --- Shop System Functions ---
+// --- Shop Equipment Logic ---
 function buyItem(id, cost) {
     if(!confirm("ยืนยันการซื้อไอเทมนี้ด้วย " + cost + " MP?")) return;
     let inv = userData.inventory || []; inv.push(id);
@@ -446,7 +428,7 @@ function equipItem(id, type, val) {
     if(type === 'glow') updateData.equippedGlow = val;
     if(type === 'frame') updateData.equippedFrame = val;
     db.collection("students").doc(userData.studentId).update(updateData).then(() => {
-        alert("สวมใส่ไอเท็มแล้ว!"); showPage('shop', document.querySelectorAll('.nav-btn')[4]);
+        alert("สวมใส่ไอเท็มแล้ว! ไปดูที่หน้า Character ได้เลย"); showPage('shop', document.querySelectorAll('.nav-btn')[4]);
     });
 }
 
@@ -575,8 +557,8 @@ function viewTeacher(v) {
             let html = `<div style="overflow-x:auto;"><table class="admin-table" style="min-width:800px;"><tr><th>ห้อง</th><th>เลขที่</th><th>รหัส</th><th>ชื่อ-สกุล</th><th>LV</th><th>EXP</th><th>MP</th><th>Action</th></tr>`;
             studentsList.forEach(s => {
                 html += `<tr>
-                    <td><input type="text" class="edit-input" style="width:50px;" id="r_${s.studentId}" value="${s.room||''}"></td>
-                    <td><input type="number" class="edit-input" style="width:50px;" id="n_${s.studentId}" value="${s.number||''}"></td>
+                    <td><input type="text" class="edit-input" style="width:50px;" id="r_${s.studentId}" value="${s.room||''}" placeholder="ม.2/1"></td>
+                    <td><input type="number" class="edit-input" style="width:50px;" id="n_${s.studentId}" value="${s.number||''}" placeholder="เลขที่"></td>
                     <td>${s.studentId}</td>
                     <td><input type="text" class="name-input" style="width:120px;" id="name_${s.studentId}" value="${s.name}"></td>
                     <td><input type="number" class="edit-input" style="width:50px;" id="lv_${s.studentId}" value="${s.level||1}"></td>
@@ -664,7 +646,7 @@ function viewTeacher(v) {
         announcements.forEach((a, i) => {
             annHTML += `<div style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;"><span>${a}</span><button class="btn-p btn-danger" style="padding:8px;" onclick="delAnnounce(${i})"><i class="fa-solid fa-trash"></i></button></div>`;
         });
-        box.innerHTML = `<div style="background:rgba(255,153,0,0.1); border:1px solid #ff9900; padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:#ff9900;">จัดการประกาศ</h3><div style="display:flex; gap:10px; margin-bottom:20px;"><input type="text" id="new-announce" placeholder="พิมพ์ประกาศใหม่ที่นี่..."><button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:10px;" onclick="addAnnounce()">เพิ่มประกาศ</button></div>${annHTML}</div>`;
+        box.innerHTML = `<div style="background:rgba(255,153,0,0.1); border:1px solid #ff9900; padding:20px; border-radius:10px;"><h3 class="pixel-font" style="font-size:12px; color:#ff9900;">จัดการประกาศหน้า Dashboard</h3><div style="display:flex; gap:10px; margin-bottom:20px;"><input type="text" id="new-announce" placeholder="พิมพ์ประกาศใหม่ที่นี่..."><button class="btn-p pixel-font" style="background:#ff9900; color:#000; font-size:10px;" onclick="addAnnounce()">เพิ่มประกาศ</button></div>${annHTML}</div>`;
     }
     else if (v === 'chat') {
         db.collection("chats").orderBy("lastUpdate", "desc").get().then(snap => {
@@ -673,7 +655,7 @@ function viewTeacher(v) {
                 let d = doc.data();
                 listHTML += `<div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-bottom:10px; cursor:pointer; border:1px solid var(--glass-border);" onclick="openTeacherChat('${doc.id}', '${d.studentName}')"><i class="fa-solid fa-user"></i> ${d.studentName} (รหัส: ${doc.id})</div>`;
             });
-            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px;">กล่องข้อความนักเรียน</h3><div style="display:flex; gap:20px;"><div style="flex:1;">${listHTML||'<p>ยังไม่มีข้อความ</p>'}</div><div style="flex:2; background:#000; border-radius:10px; padding:20px; display:flex; flex-direction:column; height:400px;" id="t-chat-window">คลิกที่ชื่อนักเรียนเพื่อเริ่มแชท</div></div>`;
+            box.innerHTML = `<h3 class="pixel-font" style="font-size:12px;">กล่องข้อความจากนักเรียน</h3><div style="display:flex; gap:20px;"><div style="flex:1;">${listHTML||'<p>ยังไม่มีข้อความ</p>'}</div><div style="flex:2; background:#000; border-radius:10px; padding:20px; display:flex; flex-direction:column; height:400px;" id="t-chat-window">คลิกที่ชื่อนักเรียนเพื่อเริ่มแชท</div></div>`;
         });
     }
     else if(v === 'lessons') {
@@ -696,7 +678,44 @@ function viewTeacher(v) {
     }
 }
 
-// System Support Functions (Save, Load, Toggle)
+// Teacher Specific Chat
+function openTeacherChat(stuId, stuName) {
+    const win = document.getElementById('t-chat-window');
+    win.innerHTML = `<h4 style="margin-top:0; color:var(--aqua);">แชทกับ: ${stuName}</h4><div id="t-chat-msgs" style="flex-grow:1; overflow-y:auto; background:#111; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:10px; font-size:13px; margin-bottom:10px;"></div><div style="display:flex; gap:10px;"><input type="text" id="t-chat-input" placeholder="ตอบกลับนักเรียน..." style="margin:0; padding:10px;"><button class="btn-p" style="padding:10px;" onclick="sendTeacherMsg('${stuId}')"><i class="fa-solid fa-paper-plane"></i></button></div>`;
+    if(teacherChatUnsubscribe) teacherChatUnsubscribe();
+    currentTeacherChatId = stuId;
+    teacherChatUnsubscribe = db.collection("chats").doc(stuId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
+        const box = document.getElementById('t-chat-msgs');
+        if(!box) return; box.innerHTML = "";
+        snap.forEach(doc => {
+            let m = doc.data(); let align = m.sender === 'teacher' ? 'self-end' : 'self-start'; let bg = m.sender === 'teacher' ? 'var(--p-green)' : 'rgba(0,255,255,0.1)'; let color = m.sender === 'teacher' ? '#000' : '#fff';
+            box.innerHTML += `<div style="align-self:${align}; background:${bg}; color:${color}; padding:10px 15px; border-radius:15px; max-width:80%;">${m.text}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+}
+function sendTeacherMsg(stuId) {
+    const input = document.getElementById('t-chat-input');
+    const text = input.value.trim();
+    if(!text) return;
+    db.collection("chats").doc(stuId).collection("messages").add({ sender: 'teacher', text: text, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    db.collection("chats").doc(stuId).update({ lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
+    input.value = "";
+}
+
+// Announcements
+function addAnnounce() {
+    const text = document.getElementById('new-announce').value.trim();
+    if(!text) return;
+    let newAnn = [...announcements, text];
+    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
+}
+function delAnnounce(idx) {
+    let newAnn = [...announcements]; newAnn.splice(idx, 1);
+    db.collection("settings").doc("announcements").set({list: newAnn}).then(() => viewTeacher('announcements'));
+}
+
+// Student Profile & Grading Support
 function saveStudentProfile(id) {
     const room = document.getElementById(`r_${id}`).value; const num = document.getElementById(`n_${id}`).value; const name = document.getElementById(`name_${id}`).value;
     const lv = parseInt(document.getElementById(`lv_${id}`).value)||1; const exp = parseInt(document.getElementById(`exp_${id}`).value)||0; const mp = parseInt(document.getElementById(`mp_${id}`).value)||0;
@@ -708,6 +727,8 @@ function updateGrade(id) {
     document.getElementById(`pre_${id}`).innerText = pre; document.getElementById(`post_${id}`).innerText = post; document.getElementById(`tot_${id}`).innerText = total;
     db.collection("students").doc(id).update({ scores: { s1:s1, s2:s2, s3:s3, mid:mid, s4:s4, s5:s5, s6:s6, final:fin } });
 }
+
+// Editors & Toggles
 function loadLessonEditor(u) {
     const area = document.getElementById('lesson-editor-area'); if(!u) return area.innerHTML = ""; const items = lessonsData[u] || []; let html = ``;
     items.forEach((item, i) => { html += `<div style="border:1px solid #555; padding:15px; margin:15px 0; border-radius:8px; background:rgba(255,255,255,0.02);"><input type="text" value="${item.title}" placeholder="ชื่อสื่อ" onchange="lessonsData['${u}'][${i}].title=this.value"><select onchange="lessonsData['${u}'][${i}].type=this.value"><option value="youtube" ${item.type==='youtube'?'selected':''}>YouTube URL</option><option value="image" ${item.type==='image'?'selected':''}>Image URL</option><option value="link" ${item.type==='link'?'selected':''}>Link Web</option></select><input type="text" value="${item.url}" placeholder="URL" onchange="lessonsData['${u}'][${i}].url=this.value"><button class="btn-p btn-danger" style="padding:10px; font-size:10px;" onclick="lessonsData['${u}'].splice(${i},1); loadLessonEditor('${u}');">ลบ</button></div>`; });
