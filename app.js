@@ -9,56 +9,42 @@ window.murdleState = {}; const TEACHER_ID = "pchrkr007"; const ROOMS_LIST = ["Lo
 
 // ================= 🎲 MEGA DATABASE: ไอเทม สกิล และร้านค้า 🎲 =================
 
-// 📦 1. ไอเทมดรอป (45 ชิ้น)
 const DROP_ITEMS = [
     { id:"c1", name:"สาย LAN ขาดๆ", type:"common", price:5, icon:"fa-network-wired" }, { id:"c2", name:"คีย์แคปหลุด", type:"common", price:6, icon:"fa-keyboard" }, { id:"c3", name:"แผ่น Floppy Disk", type:"common", price:7, icon:"fa-floppy-disk" }, { id:"c4", name:"ซีดีรอมเป็นรอย", type:"common", price:8, icon:"fa-compact-disc" }, { id:"c5", name:"แฟลชไดรฟ์ติดไวรัส", type:"common", price:9, icon:"fa-usb" },
     { id:"c6", name:"เมาส์ลูกกลิ้งพัง", type:"common", price:10, icon:"fa-computer-mouse" }, { id:"c7", name:"น็อตเมนบอร์ด", type:"common", price:10, icon:"fa-screw" }, { id:"c8", name:"พัดลมเคสฝุ่นเกาะ", type:"common", price:11, icon:"fa-fan" }, { id:"c9", name:"สายชาร์จหักใน", type:"common", price:12, icon:"fa-plug" }, { id:"c10", name:"แบตเตอรี่บวม", type:"common", price:12, icon:"fa-battery-quarter" },
     { id:"c11", name:"แผ่นรองเมาส์เปื่อย", type:"common", price:13, icon:"fa-rug" }, { id:"c12", name:"ถ่าน BIOS หมด", type:"common", price:14, icon:"fa-battery-empty" }, { id:"c13", name:"โค้ดตกแท็กปิด", type:"common", price:15, icon:"fa-code" }, { id:"c14", name:"ซิลิโคนแห้งกรัง", type:"common", price:15, icon:"fa-droplet" }, { id:"c15", name:"สาย VGA เข็มหัก", type:"common", price:8, icon:"fa-cable-car" },
-    
     { id:"u1", name:"สาย LAN Cat6", type:"uncommon", price:25, icon:"fa-network-wired" }, { id:"u2", name:"แรม DDR3 4GB", type:"uncommon", price:28, icon:"fa-memory" }, { id:"u3", name:"สาย HDMI 4K", type:"uncommon", price:28, icon:"fa-plug" }, { id:"u4", name:"ฮาร์ดดิสก์ 500GB", type:"uncommon", price:30, icon:"fa-hard-drive" }, { id:"u5", name:"คีย์บอร์ด RGB", type:"uncommon", price:32, icon:"fa-keyboard" },
     { id:"u6", name:"ไมโครโฟนตั้งโต๊ะ", type:"uncommon", price:33, icon:"fa-microphone" }, { id:"u7", name:"ซิลิโคนพรีเมียม", type:"uncommon", price:35, icon:"fa-droplet" }, { id:"u8", name:"เมาส์ไร้สาย", type:"uncommon", price:35, icon:"fa-computer-mouse" }, { id:"u9", name:"แฟลชไดรฟ์ 32GB", type:"uncommon", price:36, icon:"fa-usb" }, { id:"u10", name:"พัดลม LED", type:"uncommon", price:38, icon:"fa-fan" },
     { id:"u11", name:"เว็บแคม 720p", type:"uncommon", price:39, icon:"fa-camera" }, { id:"u12", name:"Arduino Uno R3", type:"uncommon", price:40, icon:"fa-microchip" }, { id:"u13", name:"จอ 60Hz 1080p", type:"uncommon", price:42, icon:"fa-desktop" }, { id:"u14", name:"Power Bank", type:"uncommon", price:44, icon:"fa-battery-full" }, { id:"u15", name:"โค้ด Python ไร้บั๊ก", type:"uncommon", price:45, icon:"fa-check-double" },
-    
     { id:"r1", name:"SSD M.2 1TB", type:"rare", price:80, icon:"fa-hard-drive" }, { id:"r2", name:"แรม DDR5 16GB", type:"rare", price:85, icon:"fa-memory" }, { id:"r3", name:"เมนบอร์ด Gaming", type:"rare", price:90, icon:"fa-chess-board" }, { id:"r4", name:"ชุดน้ำปิดระบายความร้อน", type:"rare", price:95, icon:"fa-snowflake" }, { id:"r5", name:"เราเตอร์ Wi-Fi 6", type:"rare", price:98, icon:"fa-wifi" },
     { id:"r6", name:"Core i7 / Ryzen 7", type:"rare", price:100, icon:"fa-microchip" }, { id:"r7", name:"เมาส์เซ็นเซอร์เทพ", type:"rare", price:105, icon:"fa-computer-mouse" }, { id:"r8", name:"Stream Deck", type:"rare", price:108, icon:"fa-table-cells" }, { id:"r9", name:"Mechanical Keyboard", type:"rare", price:110, icon:"fa-keyboard" }, { id:"r10", name:"จอ 144Hz 2K", type:"rare", price:115, icon:"fa-desktop" },
     { id:"r11", name:"การ์ดจอ RTX 40", type:"rare", price:120, icon:"fa-vr-cardboard" }, { id:"r12", name:"อัลกอริทึม AI", type:"rare", price:125, icon:"fa-brain" }, { id:"r13", name:"แว่น VR โฮโลกราฟิก", type:"rare", price:130, icon:"fa-glasses" }, { id:"r14", name:"โดรน 4K", type:"rare", price:140, icon:"fa-helicopter" }, { id:"r15", name:"เซิร์ฟเวอร์พกพา", type:"rare", price:150, icon:"fa-server" }
 ];
 
-// 🛍️ 2. ของใน Coin Shop (47 ชิ้น)
 const SHOP_ITEMS = [
-    // ฉายา (Titles)
     { id:"t1", name:"[ฉายา] ผู้กล้าฝึกหัด", cost:50, type:"title", value:"ผู้กล้าฝึกหัด", icon:"fa-shield-halved" }, { id:"t2", name:"[ฉายา] มือใหม่หัดโค้ด", cost:80, type:"title", value:"มือใหม่หัดโค้ด", icon:"fa-code" }, { id:"t3", name:"[ฉายา] สายก๊อปวาง", cost:100, type:"title", value:"สายก๊อปวาง", icon:"fa-copy" }, { id:"t4", name:"[ฉายา] นักแก้บั๊ก", cost:150, type:"title", value:"นักแก้บั๊ก", icon:"fa-bug" }, { id:"t5", name:"[ฉายา] โปรแกรมเมอร์หน้าย่น", cost:200, type:"title", value:"โปรแกรมเมอร์หน้าย่น", icon:"fa-face-tired" },
     { id:"t6", name:"[ฉายา] แฮกเกอร์เงา", cost:250, type:"title", value:"แฮกเกอร์เงา", icon:"fa-user-secret" }, { id:"t7", name:"[ฉายา] จ้าวแห่งลูป", cost:250, type:"title", value:"จ้าวแห่งลูป", icon:"fa-rotate-right" }, { id:"t8", name:"[ฉายา] สายปั่นงานเที่ยงคืน", cost:300, type:"title", value:"สายปั่นงานเที่ยงคืน", icon:"fa-moon" }, { id:"t9", name:"[ฉายา] อัจฉริยะ AI", cost:350, type:"title", value:"อัจฉริยะ AI", icon:"fa-brain" }, { id:"t10", name:"[ฉายา] ปรมาจารย์งู", cost:400, type:"title", value:"ปรมาจารย์งู", icon:"fa-staff-snake" },
     { id:"t11", name:"[ฉายา] สลอธยอดนักพิมพ์", cost:400, type:"title", value:"สลอธยอดนักพิมพ์", icon:"fa-keyboard" }, { id:"t12", name:"[ฉายา] ผู้พิทักษ์เซิร์ฟเวอร์", cost:500, type:"title", value:"ผู้พิทักษ์เซิร์ฟเวอร์", icon:"fa-server" }, { id:"t13", name:"[ฉายา] พระเจ้าแห่งคีย์บอร์ด", cost:600, type:"title", value:"พระเจ้าแห่งคีย์บอร์ด", icon:"fa-crown" }, { id:"t14", name:"[ฉายา] เทพทรู", cost:1000, type:"title", value:"เทพทรู", icon:"fa-gem" }, { id:"t15", name:"[ฉายา] ลูกรักครูเบียร์", cost:1500, type:"title", value:"ลูกรักครูเบียร์", icon:"fa-heart" },
-    // ไอคอน (Icons)
     { id:"i1", name:"[ไอคอน] จอคอม", cost:80, type:"icon", value:"fa-desktop", icon:"fa-desktop" }, { id:"i2", name:"[ไอคอน] คีย์บอร์ด", cost:100, type:"icon", value:"fa-keyboard", icon:"fa-keyboard" }, { id:"i3", name:"[ไอคอน] กาแฟร้อน", cost:120, type:"icon", value:"fa-mug-hot", icon:"fa-mug-hot" }, { id:"i4", name:"[ไอคอน] แมลงบั๊ก", cost:150, type:"icon", value:"fa-bug", icon:"fa-bug" }, { id:"i5", name:"[ไอคอน] จอยเกม", cost:180, type:"icon", value:"fa-gamepad", icon:"fa-gamepad" },
     { id:"i6", name:"[ไอคอน] หูฟัง", cost:200, type:"icon", value:"fa-headphones", icon:"fa-headphones" }, { id:"i7", name:"[ไอคอน] จรวด", cost:250, type:"icon", value:"fa-rocket", icon:"fa-rocket" }, { id:"i8", name:"[ไอคอน] แฮกเกอร์", cost:300, type:"icon", value:"fa-user-secret", icon:"fa-user-secret" }, { id:"i9", name:"[ไอคอน] ดาวทอง", cost:350, type:"icon", value:"fa-star", icon:"fa-star" }, { id:"i10", name:"[ไอคอน] สายฟ้า", cost:400, type:"icon", value:"fa-bolt", icon:"fa-bolt" }, { id:"i11", name:"[ไอคอน] ไฟนรก", cost:500, type:"icon", value:"fa-fire", icon:"fa-fire" }, { id:"i12", name:"[ไอคอน] เพชร", cost:800, type:"icon", value:"fa-gem", icon:"fa-gem" },
-    // ออร่าเรืองแสง (Glows)
-    { id:"g1", name:"[ออร่า] ขาวสว่าง (Light)", cost:200, type:"glow", value:"glow-white", icon:"fa-sun" }, { id:"g2", name:"[ออร่า] เขียว (Matrix)", cost:250, type:"glow", value:"glow-green", icon:"fa-code" }, { id:"g3", name:"[ออร่า] ฟ้า (Aqua)", cost:300, type:"glow", value:"glow-blue", icon:"fa-water" }, { id:"g4", name:"[ออร่า] ชมพู (Neon Pink)", cost:350, type:"glow", value:"glow-pink", icon:"fa-heart" }, { id:"g5", name:"[ออร่า] เหลือง (Warning)", cost:400, type:"glow", value:"glow-yellow", icon:"fa-triangle-exclamation" },
-    { id:"g6", name:"[ออร่า] ม่วง (Void)", cost:500, type:"glow", value:"glow-purple", icon:"fa-moon" }, { id:"g7", name:"[ออร่า] แดง (Inferno)", cost:600, type:"glow", value:"glow-red", icon:"fa-fire" }, { id:"g8", name:"[ออร่า] ทองคำ (Gold)", cost:800, type:"glow", value:"glow-gold", icon:"fa-coins" }, { id:"g9", name:"[ออร่า] ดำ (Dark Matter)", cost:1000, type:"glow", value:"glow-dark", icon:"fa-meteor" }, { id:"g10", name:"[ออร่า] รุ้งเกมมิ่ง (RGB)", cost:1200, type:"glow", value:"glow-rgb", icon:"fa-palette" },
-    // กรอบรูป (Frames)
+    { id:"g1", name:"[ออร่า] ขาวสว่าง", cost:200, type:"glow", value:"glow-white", icon:"fa-sun" }, { id:"g2", name:"[ออร่า] เขียว", cost:250, type:"glow", value:"glow-green", icon:"fa-code" }, { id:"g3", name:"[ออร่า] ฟ้า", cost:300, type:"glow", value:"glow-blue", icon:"fa-water" }, { id:"g4", name:"[ออร่า] ชมพู", cost:350, type:"glow", value:"glow-pink", icon:"fa-heart" }, { id:"g5", name:"[ออร่า] เหลือง", cost:400, type:"glow", value:"glow-yellow", icon:"fa-triangle-exclamation" },
+    { id:"g6", name:"[ออร่า] ม่วง", cost:500, type:"glow", value:"glow-purple", icon:"fa-moon" }, { id:"g7", name:"[ออร่า] แดง", cost:600, type:"glow", value:"glow-red", icon:"fa-fire" }, { id:"g8", name:"[ออร่า] ทองคำ", cost:800, type:"glow", value:"glow-gold", icon:"fa-coins" }, { id:"g9", name:"[ออร่า] ดำ", cost:1000, type:"glow", value:"glow-dark", icon:"fa-meteor" }, { id:"g10", name:"[ออร่า] รุ้งเกมมิ่ง", cost:1200, type:"glow", value:"glow-rgb", icon:"fa-palette" },
     { id:"f1", name:"[กรอบ] เหล็กกล้า", cost:300, type:"frame", value:"frame-steel", icon:"fa-circle-notch" }, { id:"f2", name:"[กรอบ] 8-Bit พิกเซล", cost:350, type:"frame", value:"frame-pixel", icon:"fa-square" }, { id:"f3", name:"[กรอบ] นีออนบลู", cost:400, type:"frame", value:"frame-neon", icon:"fa-circle" }, { id:"f4", name:"[กรอบ] ไซเบอร์พังก์", cost:500, type:"frame", value:"frame-cyber", icon:"fa-microchip" }, { id:"f5", name:"[กรอบ] โฮโลแกรม", cost:600, type:"frame", value:"frame-holo", icon:"fa-compact-disc" },
     { id:"f6", name:"[กรอบ] ไฟนรก", cost:700, type:"frame", value:"frame-fire", icon:"fa-fire-flame-curved" }, { id:"f7", name:"[กรอบ] วงเวทย์", cost:800, type:"frame", value:"frame-magic", icon:"fa-star-of-david" }, { id:"f8", name:"[กรอบ] สายฟ้า", cost:1000, type:"frame", value:"frame-lightning", icon:"fa-bolt" }, { id:"f9", name:"[กรอบ] เพชร", cost:1200, type:"frame", value:"frame-diamond", icon:"fa-gem" }, { id:"f10", name:"[กรอบ] เกราะพระเจ้า", cost:1500, type:"frame", value:"frame-god", icon:"fa-shield-halved" }
 ];
 
-// 🧠 3. Skill Tree (24 สกิลถาวร ใช้ MP)
 const SKILLS_DB = [
-    // สาย Tank
     { id:"s1", name:"ส่งงานเลท 1 วัน", tree:"tank", costSP:1, costMP:40, desc:"ไม่ต้องโดนหักคะแนนหากส่งช้า 1 วัน" }, { id:"s2", name:"โล่ศักดิ์สิทธิ์", tree:"tank", costSP:1, costMP:30, desc:"ป้องกันครูเรียกสุ่มตอบ 1 คาบ" }, { id:"s3", name:"แว่นขยาย", tree:"tank", costSP:2, costMP:50, desc:"ขอคำใบ้จากครูในการเขียนโค้ด" }, { id:"s4", name:"ตาทิพย์", tree:"tank", costSP:2, costMP:60, desc:"เปิดดูสมุด 3 นาทีตอนทำควิซ" }, { id:"s5", name:"ลากิจทิพย์", tree:"tank", costSP:3, costMP:80, desc:"แก้ตัวกรณีมาสายไม่ให้โดนหักคะแนน" }, { id:"s6", name:"Bypass", tree:"tank", costSP:3, costMP:100, desc:"ข้ามเควสย่อย 1 ข้อ" }, { id:"s7", name:"ยืดเวลาส่ง", tree:"tank", costSP:4, costMP:150, desc:"ขอยืดเวลาส่งงานกลุ่มให้ทั้งกลุ่ม" }, { id:"s8", name:"ย้อนเวลา", tree:"tank", costSP:5, costMP:200, desc:"ขอรีเซ็ตบอสไฟต์ทำใหม่ 1 ครั้ง" },
-    // สาย Support
     { id:"s9", name:"โอนพลัง", tree:"support", costSP:1, costMP:10, desc:"โอน MP ตัวเองให้เพื่อน (เสียค่าธรรมเนียม)" }, { id:"s10", name:"บัฟถามฟรี", tree:"support", costSP:1, costMP:20, desc:"ทำให้เพื่อนถามครูได้ฟรี 1 คำถาม" }, { id:"s11", name:"เดินสำรวจ", tree:"support", costSP:2, costMP:40, desc:"อนุญาตให้ลุกไปถามเพื่อนต่างกลุ่ม 5 นาที" }, { id:"s12", name:"EXP คูณสอง", tree:"support", costSP:2, costMP:50, desc:"โยนบัฟให้เพื่อนตอบคำถามได้ EXP สองเท่า" }, { id:"s13", name:"ติวเตอร์", tree:"support", costSP:3, costMP:60, desc:"แลก MP ตัวเองเป็น EXP ให้เพื่อน" }, { id:"s14", name:"ชุบชีวิตงาน", tree:"support", costSP:3, costMP:80, desc:"กู้คืนงานเพื่อนที่ลืมส่งให้กลับมาส่งได้" }, { id:"s15", name:"โล่หมู่", tree:"support", costSP:4, costMP:120, desc:"คุ้มครองทั้งกลุ่มไม่ให้โดนเรียกตอบ" }, { id:"s16", name:"ฮีลหมู่", tree:"support", costSP:5, costMP:200, desc:"เติม MP ให้ทุกคนในกลุ่ม" },
-    // สาย Mage
     { id:"s17", name:"วาร์ปด่วน", tree:"mage", costSP:1, costMP:15, desc:"ขอเข้าห้องน้ำ VIP โดยไม่ต้องขออนุญาต" }, { id:"s18", name:"ยืดเส้น", tree:"mage", costSP:1, costMP:20, desc:"ขอลุคเดินยืดเส้นยืดสาย 3 นาที" }, { id:"s19", name:"เปิดเพลง", tree:"mage", costSP:2, costMP:30, desc:"ขอเปิด BGM 1 เพลงให้ทั้งห้องฟัง" }, { id:"s20", name:"หูฟังส่วนตัว", tree:"mage", costSP:2, costMP:40, desc:"ขอใส่หูฟังตัวเองทำงาน 1 คาบ" }, { id:"s21", name:"เสบียง", tree:"mage", costSP:3, costMP:50, desc:"ขอกินขนมหน้าคอม 1 คาบ" }, { id:"s22", name:"สลับที่นั่ง", tree:"mage", costSP:3, costMP:60, desc:"ขอสลับคอมกับเพื่อน (เพื่อนต้องยอม)" }, { id:"s23", name:"ลบความจำ", tree:"mage", costSP:4, costMP:100, desc:"ลบประวัติมาสายของตัวเอง 1 ครั้ง" }, { id:"s24", name:"ปิดไมค์", tree:"mage", costSP:5, costMP:150, desc:"ระงับคำสั่งบ่นของครู 1 นาที" }
 ];
 
-// 🎰 4. GACHA POOL (ตู้ 1,000 Coins ไอเทมใช้แล้วทิ้ง)
 const GACHA_POOL = [
     { id:"g1", name:"EXP Boost (S)", type:"salt", prob:30, desc:"กินแล้วได้ 10 EXP" }, { id:"g2", name:"EXP Boost (M)", type:"salt", prob:25, desc:"กินแล้วได้ 25 EXP" }, { id:"g3", name:"EXP Boost (L)", type:"salt", prob:15, desc:"กินแล้วได้ 50 EXP" },
     { id:"g4", name:"[การ์ด] ป้องกันสุ่ม", type:"rare", prob:10, desc:"ใช้รอดตัวจากการเรียก 1 ครั้ง" }, { id:"g5", name:"[การ์ด] ขโมยเหรียญ", type:"rare", prob:10, desc:"สุ่มปล้น 50-100 Coins จากเพื่อน" }, { id:"g6", name:"[การ์ด] บัฟกลุ่ม x2", type:"rare", prob:5, desc:"ทั้งกลุ่มได้ EXP จากกิจกรรม x2 1 คาบ" },
-    { id:"g7", name:"[Ultimate] เนตรพระเจ้า", type:"ultimate", prob:2, desc:"ขอดูเฉลยโค้ด/โจทย์ 1 จุดแบบเน้นๆ" }, { id:"g8", name:"[Ultimate] รีเซ็ตคะแนน", type:"ultimate", prob:1.5, desc:"ลบงานที่คะแนนน้อยเพื่อทำส่งใหม่ 1 งาน" }, { id:"g9", name:"[Ultimate] เผด็จการ", type:"ultimate", prob:1, desc:"สั่งให้เพื่อน 1 คนต้องพรีเซนต์งานแทน" }, { id:"g10", name:"[Ultimate] Domain Expansion", type:"ultimate", prob:0.5, desc:"ตั้งกฎห้องเรียน 1 คาบ (เช่น ห้ามพูดคำว่าบั๊ก)" }
+    { id:"g7", name:"[Ultimate] เนตรพระเจ้า", type:"ultimate", prob:2, desc:"ขอดูเฉลยโค้ด/โจทย์ 1 จุดแบบเน้นๆ" }, { id:"g8", name:"[Ultimate] รีเซ็ตคะแนน", type:"ultimate", prob:1.5, desc:"ลบงานที่คะแนนน้อยเพื่อทำส่งใหม่ 1 งาน" }, { id:"g9", name:"[Ultimate] เผด็จการ", type:"ultimate", prob:1, desc:"สั่งให้เพื่อน 1 คนต้องพรีเซนต์งานแทน" }, { id:"g10", name:"[Ultimate] Domain Expansion", type:"ultimate", prob:0.5, desc:"ตั้งกฎห้องเรียน 1 คาบ" }
 ];
 
-// 🕵️‍♂️ 5. CASES DB (คดีสืบสวน สมบูรณ์ 100%)
 const CASES_DB = [
     { title: "คดีที่ 1: ขโมยซอร์สโค้ด", story: "ใครขโมยซอร์สโค้ด? ที่ไหน? ใช้อะไร?", suspects: ["นาย A", "นางสาว B", "เด็กชาย C", "นาง D"], locations: ["ห้องเซิร์ฟเวอร์", "ห้องพักครู", "สวน", "โรงอาหาร"], weapons: ["แฟลชไดรฟ์", "แล็ปท็อป", "มือถือ", "แท็บเล็ต"], clues: ["1. C ไปโรงอาหาร","2. มีแท็บเล็ตที่โรงอาหาร","3. D อยู่ห้องพักครู","4. ห้องพักครูใช้แล็ปท็อป","5. โจรเข้าเซิร์ฟเวอร์","6. โจรใช้แฟลชไดรฟ์","7. B ไม่มีมือถือ/แท็บเล็ต","8. A ไม่ไปห้องพักครู/โรงอาหาร","9. สวนไม่ใช้แล็ปท็อป/แท็บเล็ต","10. B แอบเข้าเซิร์ฟเวอร์"], ansWho: "นางสาว B", ansWhere: "ห้องเซิร์ฟเวอร์", ansWhat: "แฟลชไดรฟ์" },
     { title: "คดีที่ 2: แฮกเกอร์ป่วนเว็บ", story: "ใครแฮกเว็บ? ที่ไหน? ใช้อะไร?", suspects: ["ประธาน", "หัวหน้าห้อง", "ภารโรง", "ครูฝึกสอน"], locations: ["ห้องสมุด", "ห้องคอม", "ดาดฟ้า", "สนามบาส"], weapons: ["สมาร์ทวอทช์", "มินิพีซี", "แว่นตา", "โน้ตบุ๊ก"], clues: ["1. ครูไปสนามบาส","2. มีแว่นที่ดาดฟ้า","3. ภารโรงอยู่ดาดฟ้า","4. ห้องสมุดใช้โน้ตบุ๊ก","5. ประธานอยู่ห้องสมุด","6. แฮกเกอร์ใช้มินิพีซี","7. แฮกเกอร์อยู่ห้องคอม","8. สนามบาสใช้วอทช์","9. หัวหน้าห้องไม่ใช้วอทช์/โน้ตบุ๊ก","10. หัวหน้าอยู่ห้องคอม"], ansWho: "หัวหน้าห้อง", ansWhere: "ห้องคอม", ansWhat: "มินิพีซี" },
@@ -199,9 +185,9 @@ function showPage(id, btn) {
     }
     else if(id === 'inventory') {
         let bHTML = ""; (userData.bag||[]).forEach((item, i) => { bHTML += `<div class="item-card ${item.type}"><i class="fa-solid ${item.icon}" style="font-size:24px; margin-bottom:10px;"></i><div>${item.name}</div><div style="color:#ffcc00; margin:5px 0;">${item.price} Coins</div><button class="btn-p" style="padding:5px; font-size:10px; width:100%;" onclick="sellItem(${i})">ขาย</button></div>`; });
-        if(bHTML==="") bHTML = "<p style='grid-column:1/-1; color:#555; text-align:center;'>กระเป๋าว่างเปล่า ไปส่งงานหรือตีบอสเพื่อดรอปไอเทมสิ!</p>";
+        if(bHTML==="") bHTML = "<p style='grid-column:1/-1; color:#555; text-align:center;'>กระเป๋าว่างเปล่า ไปส่งงานหรือตีบอสสิ!</p>";
         let cHTML = ""; (userData.cards||[]).forEach((c, i) => { cHTML += `<div class="item-card ${c.type}" style="border-color:${c.type==='ultimate'?'#ff3366':'#ffcc00'}"><i class="fa-solid fa-scroll" style="font-size:24px; margin-bottom:10px;"></i><div style="font-weight:bold;">${c.name}</div><div style="font-size:10px; color:#aaa; margin:5px 0; height:30px;">${c.desc}</div><button class="btn-p" style="padding:5px; font-size:10px; width:100%; background:var(--detective-purple);" onclick="useCard(${i})">ใช้งาน</button></div>`; });
-        display.innerHTML = `<h2 class="pixel-font" style="color:#00ff41;">>>> Bag & Gacha</h2><div class="gacha-box"><h3 style="color:#ffcc00; margin-top:0;">ตู้กาชามรณะ 🎰</h3><p style="font-size:12px; color:#ddd;">สุ่มการ์ดสกิลอัลติเมทและไอเทมแรร์ (โอกาสออก 5%)</p><button class="btn-p pixel-font" style="background:#ffcc00; color:#000; font-size:14px; padding:15px 30px;" onclick="rollGacha()">หมุน (1000 Coins)</button></div><hr style="border-color:#444; margin:30px 0;"><h3 class="pixel-font" style="font-size:12px;">🎒 การ์ดสกิลใช้งานในกระเป๋า</h3><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:30px;">${cHTML||'<p style="color:#555;">ยังไม่มีการ์ด</p>'}</div><div style="display:flex; justify-content:space-between; align-items:center;"><h3 class="pixel-font" style="font-size:12px;">📦 ไอเทมขยะ (กดขายรับ Coins)</h3><button class="btn-p btn-danger" style="font-size:10px; padding:10px;" onclick="sellAll()">💰 ขายทั้งหมด</button></div><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px; margin-top:10px;">${bHTML}</div>`;
+        display.innerHTML = `<h2 class="pixel-font" style="color:#00ff41;">>>> Bag & Gacha</h2><div class="gacha-box"><h3 style="color:#ffcc00; margin-top:0;">ตู้กาชามรณะ 🎰</h3><p style="font-size:12px; color:#ddd;">สุ่มการ์ดสกิลอัลติเมทและไอเทมแรร์ (โอกาส 5%)</p><button class="btn-p pixel-font" style="background:#ffcc00; color:#000; font-size:14px; padding:15px 30px;" onclick="rollGacha()">หมุน (1000 Coins)</button></div><hr style="border-color:#444; margin:30px 0;"><h3 class="pixel-font" style="font-size:12px;">🎒 การ์ดสกิลในตัว</h3><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:30px;">${cHTML||'<p style="color:#555;">ยังไม่มีการ์ด</p>'}</div><div style="display:flex; justify-content:space-between; align-items:center;"><h3 class="pixel-font" style="font-size:12px;">📦 ไอเทมขยะ (กดขายเพื่อรับ Coins)</h3><button class="btn-p btn-danger" style="font-size:10px; padding:10px;" onclick="sellAll()">💰 ขายทั้งหมด</button></div><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px; margin-top:10px;">${bHTML}</div>`;
     }
     else if(id === 'skills') {
         let sHTML = ""; SKILLS_DB.forEach(sk => {
@@ -209,10 +195,10 @@ function showPage(id, btn) {
             let b = ul ? `<button class="btn-p" style="width:100%; font-size:10px; background:var(--aqua); color:#000;" onclick="castSkill('${sk.id}')">⚡ ร่ายเวทย์ (${sk.costMP} MP)</button>` : `<button class="btn-p" style="width:100%; font-size:10px; background:#b366ff;" onclick="unlockSkill('${sk.id}', ${sk.costSP})">🔓 ปลดล็อค (${sk.costSP} SP)</button>`;
             sHTML += `<div style="background:rgba(0,0,0,0.5); border:1px solid ${ul?'var(--aqua)':'#444'}; padding:15px; border-radius:10px; text-align:center;"><h4 style="margin-top:0; color:${ul?'var(--aqua)':'#888'};">${sk.name}</h4><p style="font-size:10px; color:#aaa; height:30px;">${sk.desc}</p>${b}</div>`;
         });
-        display.innerHTML = `<h2 class="pixel-font" style="color:#b366ff;">>>> Skill Tree</h2><p style="color:#aaa;">ใช้แต้ม SP ปลดล็อคสกิลถาวร (มี SP: ${userData.sp})</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">${sHTML}</div>`;
+        display.innerHTML = `<h2 class="pixel-font" style="color:#b366ff;">>>> Skill Tree</h2><p style="color:#aaa;">ใช้แต้ม SP ปลดล็อคสกิลถาวร (SP: ${userData.sp})</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">${sHTML}</div>`;
     }
     else if (id === 'shop') {
-        let shopHTML = `<h2 class="pixel-font" style="color:#ffcc00;">>>> Coin Shop</h2><p style="color:#aaa;">(มี Coins: <span style="color:#ffcc00; font-weight:bold;">${userData.coins||0}</span>)</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">`;
+        let shopHTML = `<h2 class="pixel-font" style="color:#ffcc00; text-shadow:0 0 10px #ffcc00;">>>> Coin Shop</h2><p style="color:#aaa;">(Coins: <span style="color:#ffcc00; font-weight:bold;">${userData.coins||0}</span>)</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;">`;
         SHOP_ITEMS.forEach(item => {
             const isBought = (userData.inventory || []).includes(item.id);
             let isEq = (item.type==='title'&&userData.equippedTitle===item.value)||(item.type==='icon'&&userData.equippedIcon===item.value)||(item.type==='glow'&&userData.equippedGlow===item.value)||(item.type==='frame'&&userData.equippedFrame===item.value);
@@ -222,7 +208,8 @@ function showPage(id, btn) {
         display.innerHTML = shopHTML + "</div>";
     }
     else if (id === 'quests') {
-        display.innerHTML = `<h2 class="pixel-font aqua-glow">>>> Quest Board</h2><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">${renderQuestCard(1,"แนวคิดเชิงคำนวณ",questStatus.unit1)}${renderQuestCard(2,"การออกแบบอัลกอริทึม",questStatus.unit2)}${renderQuestCard(3,"Python",questStatus.unit3)}</div>`;
+        const rCard = (u, t, ok) => ok ? `<div class="content-card"><h3>Unit ${u}: ${t}</h3><button class="btn-p" onclick="openQuestDetail('unit${u}')">ENTER</button></div>` : `<div class="content-card" style="opacity:0.5;"><h3>Unit ${u}: ${t} 🔒</h3></div>`;
+        display.innerHTML = `<h2 class="pixel-font aqua-glow">>>> Quest Board</h2><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">${rCard(1,"แนวคิดเชิงคำนวณ",questStatus.unit1)}${rCard(2,"การออกแบบอัลกอริทึม",questStatus.unit2)}${rCard(3,"Python",questStatus.unit3)}</div>`;
     }
     else if (id === 'lessons') {
         let html = `<h2 class="pixel-font aqua-glow">>>> Lessons</h2>`;
@@ -239,14 +226,16 @@ function showPage(id, btn) {
         display.innerHTML = `<h2 class="pixel-font aqua-glow">>>> Character Profile</h2><div style="display:flex; flex-wrap:wrap; gap:30px;"><div style="flex:1; background:rgba(255,255,255,0.05); padding:30px; border-radius:20px; text-align:center;"><div class="avatar-box ${userData.equippedFrame||''}" style="width:100px; height:100px; background:var(--aqua); margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border-radius:${userData.equippedFrame==='frame-cyber'?'10%':'50%'};"><i class="fa-solid fa-user-astronaut"></i></div><h3 style="margin:0;">${ic}<span class="${userData.equippedGlow||''}">${userData.name}</span></h3><p style="color:#ffcc00; font-size:12px;">${userData.equippedTitle||userData.rank}</p><p style="color:#aaa;">ID: ${userData.studentId} | ${userData.room} | เลขที่ ${userData.number}</p></div><div style="flex:2;"><div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;"><div class="stats-box">INT<span class="stats-val">${intStat}</span></div><div class="stats-box">AGI<span class="stats-val">${agiStat}</span></div><div class="stats-box">LUK<span class="stats-val">${lukStat}</span></div></div><div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:12px; margin-top:20px;"><p>EXP Progress</p><div class="bar-outer"><div class="bar-fill" style="width:${userData.exp}%; background:var(--aqua);"></div></div><p style="text-align:right;">${userData.exp} / 100</p></div></div></div>`;
     }
     else if (id === 'teacher') {
-        display.innerHTML = `<h2 class="pixel-font" style="color:#ffcc00;">>>> Kru Beer Admin</h2><div style="display:flex; flex-wrap:wrap; gap:10px; margin:20px 0;"><button class="btn-p" onclick="viewTeacher('students')">โปรไฟล์เด็ก</button><button class="btn-p" onclick="viewTeacher('grading')">สมุดคะแนน</button><button class="btn-p" onclick="viewTeacher('assignments')">ตรวจงาน</button><button class="btn-p" onclick="viewTeacher('online')">เช็คออนไลน์</button><button class="btn-p" onclick="viewTeacher('skills')">Skill Logs</button><button class="btn-p" onclick="viewTeacher('chat')">แชท</button><button class="btn-p" onclick="viewTeacher('announcements')">ประกาศ</button><button class="btn-p" onclick="viewTeacher('quests')">ระบบ/เควส</button><button class="btn-p" onclick="viewTeacher('detective')">คดี</button></div><div id="teacher-view"></div>`;
+        display.innerHTML = `<h2 class="pixel-font" style="color:#ffcc00;">>>> Kru Beer Admin</h2><div style="display:flex; flex-wrap:wrap; gap:10px; margin:20px 0;"><button class="btn-p" onclick="viewTeacher('students')">โปรไฟล์เด็ก</button><button class="btn-p" style="background:#00ccff; color:#000;" onclick="viewTeacher('attendance')">เช็คชื่อ</button><button class="btn-p" onclick="viewTeacher('grading')">สมุดคะแนน</button><button class="btn-p" onclick="viewTeacher('assignments')">ตรวจงาน</button><button class="btn-p" onclick="viewTeacher('online')">เช็คออนไลน์</button><button class="btn-p" onclick="viewTeacher('skills')">Skill Logs</button><button class="btn-p" onclick="viewTeacher('chat')">แชท</button><button class="btn-p" onclick="viewTeacher('announcements')">ประกาศ</button><button class="btn-p" onclick="viewTeacher('quests')">ระบบ/เควส</button><button class="btn-p" onclick="viewTeacher('detective')">คดี</button></div><div id="teacher-view"></div>`;
         viewTeacher('students');
     }
 }
 
 // --- QUEST BOARD LOGIC ---
 function openQuestDetail(u) {
-    const sm = userData.submittedMissions || []; const rm = userData.returnedMissions || []; const isBoss = (userData.completedBosses || []).includes(u); const isOpen = questStatus['boss_' + u]; let m1 = "", m2 = "";
+    const sm = userData.submittedMissions || []; const rm = userData.returnedMissions || [];
+    const isBoss = (userData.completedBosses || []).includes(u); const isOpen = questStatus['boss_' + u];
+    let m1 = "", m2 = "";
     if(questStatus[`${u}_m1`]) { if(rm.includes(`${u}_m1`)) m1 = `<div style="color:#33ccff; padding:10px; text-align:center;">🔄 ตรวจและส่งคืนแล้ว</div>`; else if(sm.includes(`${u}_m1`)) m1 = `<div style="color:#00ff41; padding:10px; text-align:center;">✅ ส่งแล้ว</div>`; else m1 = `<input type="file" id="f_${u}_1" style="background:#000;"><button class="btn-p" onclick="uploadDrive('f_${u}_1', '${u}_m1')">ส่งงาน (ดรอปไอเทม)</button>`; } else m1 = `<div style="color:#888;">🔒 ล็อค</div>`;
     if(questStatus[`${u}_m2`]) { if(rm.includes(`${u}_m2`)) m2 = `<div style="color:#33ccff; padding:10px; text-align:center;">🔄 ตรวจและส่งคืนแล้ว</div>`; else if(sm.includes(`${u}_m2`)) m2 = `<div style="color:#00ff41; padding:10px; text-align:center;">✅ ส่งแล้ว</div>`; else m2 = `<input type="file" id="f_${u}_2" style="background:#000;"><button class="btn-p" onclick="uploadDrive('f_${u}_2', '${u}_m2')">ส่งงาน (ดรอปไอเทม)</button>`; } else m2 = `<div style="color:#888;">🔒 ล็อค</div>`;
     let bossHTML = isBoss ? `<div style="color:#00ff41;">🎉 BOSS CLEARED!</div>` : (!isOpen ? `<div style="color:#888;">🔒 BOSS LOCKED</div>` : `<div id="quiz-container_${u}"></div>`);
@@ -271,7 +260,8 @@ function uploadDrive(inputId, missionId) {
 function submitBoss(u) {
     if(!confirm("ส่งแล้วแก้ไม่ได้ ยืนยัน?")) return; window.isDoingQuiz = false; const qs = quizData[u] || []; let score = 0;
     qs.forEach((q, i) => { const sel = document.querySelector(`input[name="q_${u}_${i}"]:checked`); if(sel && sel.value === q.key) score++; });
-    let cb = userData.completedBosses || []; cb.push(u); db.collection("students").doc(userData.studentId).update({ completedBosses: cb }).then(() => { addExp(userData.studentId, score*10); rollDrops('boss'); showPage('quests', document.querySelectorAll('.nav-btn')[2]); });
+    let cb = userData.completedBosses || []; cb.push(u);
+    db.collection("students").doc(userData.studentId).update({ completedBosses: cb }).then(() => { addExp(userData.studentId, score*10); rollDrops('boss'); showPage('quests', document.querySelectorAll('.nav-btn')[2]); });
 }
 
 // --- DETECTIVE ---
@@ -281,9 +271,44 @@ function saveCaseAnswer() { const who = document.getElementById('ansWho').value;
 function buyItem(id, cost) { if((userData.coins||0) >= cost) { let inv = userData.inventory || []; inv.push(id); db.collection("students").doc(userData.studentId).update({ coins: userData.coins - cost, inventory: inv }).then(() => {alert("ซื้อสำเร็จ!"); showPage('shop', document.querySelectorAll('.nav-btn')[6]);}); } else { alert("Coins ไม่พอ!");} }
 function equipItem(id, type, val) { let upd = {}; if(type==='title') upd.equippedTitle = val; if(type==='icon') upd.equippedIcon = val; if(type==='glow') upd.equippedGlow = val; if(type==='frame') upd.equippedFrame = val; db.collection("students").doc(userData.studentId).update(upd).then(() => {alert("สวมใส่แล้ว!"); showPage('shop', document.querySelectorAll('.nav-btn')[6]);}); }
 
-// --- TEACHER PANEL ---
-function generateRoomTabs(v) { let html = `<div style="display:flex; gap:5px; margin-bottom:15px; overflow-x:auto;">`; [...ROOMS_LIST, "อื่นๆ"].forEach(r => { html += `<button class="btn-p" style="padding:8px 15px; font-size:10px; background:${r===currentTeacherRoom?'var(--aqua)':'#444'}; color:${r===currentTeacherRoom?'#000':'#fff'};" onclick="currentTeacherRoom='${r}'; viewTeacher('${v}');">🏠 ${r}</button>`; }); return html + `</div>`; }
-function generateGroupedTables(list, rFunc, hHTML) { let fList = currentTeacherRoom === 'อื่นๆ' ? list.filter(s => !ROOMS_LIST.includes(s.room)) : list.filter(s => s.room === currentTeacherRoom); return `<div style="overflow-x:auto;"><table class="admin-table" style="min-width:800px;">${hHTML}${fList.map(s=>rFunc(s)).join('')}</table></div>`; }
+// --- TEACHER PANEL & ATTENDANCE ---
+function generateRoomTabs(v) {
+    let html = `<div style="display:flex; gap:5px; margin-bottom:15px; overflow-x:auto;">`;
+    [...ROOMS_LIST, "อื่นๆ"].forEach(r => { html += `<button class="btn-p" style="padding:8px 15px; font-size:10px; background:${r===currentTeacherRoom?'var(--aqua)':'#444'}; color:${r===currentTeacherRoom?'#000':'#fff'};" onclick="currentTeacherRoom='${r}'; viewTeacher('${v}');">🏠 ${r}</button>`; });
+    return html + `</div>`;
+}
+function generateGroupedTables(list, rFunc, hHTML) {
+    let fList = currentTeacherRoom === 'อื่นๆ' ? list.filter(s => !ROOMS_LIST.includes(s.room)) : list.filter(s => s.room === currentTeacherRoom);
+    return `<div style="overflow-x:auto;"><table class="admin-table" style="min-width:800px;">${hHTML}${fList.map(s=>rFunc(s)).join('')}</table></div>`;
+}
+
+// เช็คชื่อรายคาบ Helper
+function toggleAtt(id) {
+    let card = document.getElementById(`att_card_${id}`); let stat = document.getElementById(`att_status_${id}`);
+    if(!window.absentList) window.absentList = [];
+    if(window.absentList.includes(id)) { window.absentList.splice(window.absentList.indexOf(id), 1); card.style.borderColor = "#444"; stat.innerHTML = "✅ มาเรียน"; stat.style.color = "#00ff41"; } 
+    else { window.absentList.push(id); card.style.borderColor = "var(--alert-red)"; stat.innerHTML = "❌ ขาดเรียน"; stat.style.color = "var(--alert-red)"; }
+}
+function saveAttendance(date) {
+    if(!confirm("ยืนยันการบันทึกข้อมูลเช็คชื่อ?")) return;
+    db.collection("attendance").doc(date + "_" + currentTeacherRoom).set({ date: date, room: currentTeacherRoom, absentIds: window.absentList || [], timestamp: firebase.firestore.FieldValue.serverTimestamp() }).then(() => alert("บันทึกการเช็คชื่อห้อง " + currentTeacherRoom + " สำเร็จ!"));
+}
+function loadHistory() {
+    let date = document.getElementById('history-date').value; let resBox = document.getElementById('history-result');
+    if(!date) return alert("กรุณาเลือกวันที่"); resBox.innerHTML = "กำลังค้นหาข้อมูล...";
+    db.collection("attendance").doc(date + "_" + currentTeacherRoom).get().then(doc => {
+        if(doc.exists) {
+            let absentIds = doc.data().absentIds || [];
+            if(absentIds.length === 0) resBox.innerHTML = `<div style="color:#00ff41; padding:15px; border:1px dashed #00ff41; border-radius:8px; text-align:center;">🎉 วันที่ ${date} ห้อง ${currentTeacherRoom} <b>มาครบทุกคน!</b></div>`;
+            else {
+                db.collection("students").where("room", "==", currentTeacherRoom).get().then(snap => {
+                    let absentNames = []; snap.forEach(sDoc => { let s = sDoc.data(); if(absentIds.includes(s.studentId)) absentNames.push(`เลขที่ ${s.number||'-'} : ${s.name}`); });
+                    resBox.innerHTML = `<div style="background:rgba(255,51,102,0.1); padding:15px; border:1px solid var(--alert-red); border-radius:8px;"><h4 style="color:var(--alert-red); margin-top:0;">❌ ขาดเรียน (${absentNames.length} คน)</h4><ul style="color:#ddd; margin-bottom:0;">` + absentNames.map(n => `<li>${n}</li>`).join('') + `</ul></div>`;
+                });
+            }
+        } else resBox.innerHTML = `<div style="color:#aaa; text-align:center; padding:15px; border:1px dashed #555; border-radius:8px;">ไม่พบข้อมูลของห้อง ${currentTeacherRoom} ในวันที่ ${date}</div>`;
+    });
+}
 
 function viewTeacher(v) {
     const box = document.getElementById('teacher-view'); box.innerHTML = "Loading...";
@@ -294,6 +319,44 @@ function viewTeacher(v) {
             const header = `<tr><th>ห้อง</th><th>เลข</th><th>User</th><th>Pass</th><th>ชื่อ</th><th>LV/EXP</th><th>MP</th><th>Coins</th><th>SP</th><th>Action</th></tr>`;
             const render = (s) => `<tr><td><select class="edit-input" style="width:70px;" id="r_${s.studentId}"><option value="London" ${s.room==='London'?'selected':''}>London</option><option value="Newyork" ${s.room==='Newyork'?'selected':''}>Newyork</option><option value="Tokyo" ${s.room==='Tokyo'?'selected':''}>Tokyo</option><option value="Paris" ${s.room==='Paris'?'selected':''}>Paris</option><option value="Seoul" ${s.room==='Seoul'?'selected':''}>Seoul</option><option value="${s.room}" ${!ROOMS_LIST.includes(s.room)?'selected':''} style="display:${!ROOMS_LIST.includes(s.room)?'block':'none'}">${s.room}</option></select></td><td><input type="number" class="edit-input" style="width:40px;" id="n_${s.studentId}" value="${s.number||''}"></td><td>${s.studentId}</td><td><input type="text" class="edit-input" style="width:60px;" id="p_${s.studentId}" value="${s.password||''}"></td><td><input type="text" class="name-input" id="name_${s.studentId}" value="${s.name}"></td><td><input type="number" class="edit-input" style="width:40px;" id="lv_${s.studentId}" value="${s.level||1}">/<input type="number" class="edit-input" style="width:40px;" id="exp_${s.studentId}" value="${s.exp||0}"></td><td><input type="number" class="edit-input" style="width:40px;" id="mp_${s.studentId}" value="${s.mana||0}"></td><td><input type="number" class="edit-input" style="width:50px;" id="coin_${s.studentId}" value="${s.coins||0}"></td><td><input type="number" class="edit-input" style="width:40px;" id="sp_${s.studentId}" value="${s.sp||0}"></td><td><button class="btn-p" style="padding:5px;" onclick="saveStudentProfile('${s.studentId}')">Save</button><button class="btn-p btn-danger" style="padding:5px;" onclick="deleteStudent('${s.studentId}')">ลบ</button></td></tr>`;
             box.innerHTML = addForm + generateRoomTabs('students') + generateGroupedTables(list, render, header);
+        });
+    }
+    // 🌟 ระบบเช็คชื่อรายคาบ (Attendance) 🌟
+    else if (v === 'attendance') {
+        window.absentList = []; 
+        db.collection("students").where("studentId", "!=", TEACHER_ID).get().then(snap => {
+            let list = []; snap.forEach(doc => list.push(doc.data()));
+            let fList = currentTeacherRoom === 'อื่นๆ' ? list.filter(s => !ROOMS_LIST.includes(s.room)) : list.filter(s => s.room === currentTeacherRoom);
+            fList.sort((a,b) => (parseInt(a.number)||0) - (parseInt(b.number)||0));
+
+            let tzOffset = (new Date()).getTimezoneOffset() * 60000;
+            let today = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
+
+            let html = `<div style="background:rgba(0,204,255,0.05); padding:20px; border-radius:10px; margin-bottom:20px; border:1px solid #00ccff;">
+                <h3 style="color:#00ccff; margin-top:0;">📝 เช็คชื่อประจำวัน (${today})</h3>
+                <p style="font-size:12px; color:#aaa;">คลิกที่ชื่อนักเรียนเพื่อเปลี่ยนสถานะเป็น "ขาดเรียน"</p>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:10px; margin-bottom:20px;">`;
+            
+            fList.forEach(s => {
+                html += `<div id="att_card_${s.studentId}" style="background:rgba(0,0,0,0.5); border:2px solid #444; padding:15px; border-radius:10px; text-align:center; cursor:pointer;" onclick="toggleAtt('${s.studentId}')">
+                    <div style="font-size:12px; color:#aaa; margin-bottom:5px;">เลขที่ ${s.number||'-'}</div>
+                    <div style="font-size:14px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.name}</div>
+                    <div id="att_status_${s.studentId}" style="color:#00ff41; margin-top:10px; font-size:12px;">✅ มาเรียน</div>
+                </div>`;
+            });
+            if(fList.length === 0) html += `<div style="grid-column:1/-1; color:#888;">ไม่พบนักเรียนในห้องนี้</div>`;
+            html += `</div><button class="btn-p" style="width:100%; background:#00ccff; color:#000;" onclick="saveAttendance('${today}')">💾 บันทึกการเช็คชื่อวันนี้</button></div>`;
+
+            // ปฏิทินย้อนหลัง
+            html += `<div style="background:rgba(255,153,0,0.1); padding:20px; border-radius:10px; border:1px solid #ff9900;">
+                <h3 style="color:#ff9900; margin-top:0;">📅 ดูประวัติการขาดเรียน (ปฏิทิน)</h3>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <input type="date" id="history-date" value="${today}" style="max-width:200px; margin:0;">
+                    <button class="btn-p" style="background:#ff9900; color:#000; margin:0; padding:12px;" onclick="loadHistory()">🔍 ดูข้อมูล</button>
+                </div>
+                <div id="history-result" style="margin-top:20px; font-size:14px;"></div>
+            </div>`;
+            box.innerHTML = generateRoomTabs('attendance') + html;
         });
     }
     else if (v === 'grading') {
@@ -308,7 +371,7 @@ function viewTeacher(v) {
         db.collection("students").where("studentId", "!=", TEACHER_ID).get().then(snap => {
             let list = []; snap.forEach(doc => list.push(doc.data())); list.sort((a,b) => (parseInt(a.number)||0) - (parseInt(b.number)||0));
             const header = `<tr><th>เลข</th><th>ชื่อ</th><th>U1-M1</th><th>U1-M2</th><th>U2-M1</th><th>U2-M2</th><th>U3-M1</th><th>U3-M2</th></tr>`;
-            const render = (s) => { let sm = s.submittedMissions || []; let rm = s.returnedMissions || []; return `<tr><td>${s.number}</td><td style="white-space:nowrap;">${s.name}</td>${['unit1_m1','unit1_m2','unit2_m1','unit2_m2','unit3_m1','unit3_m2'].map(m => `<td>${rm.includes(m)?'🔵 คืนงาน':(sm.includes(m)?`<button class="btn-p" style="background:#00ff41; color:#000;" onclick="returnWork('${s.studentId}','${m}','${s.name}')">✅ ส่งแล้ว</button>`:'❌')}</td>`).join('')}</tr>`; };
+            const render = (s) => { let sm = s.submittedMissions || []; let rm = s.returnedMissions || []; return `<tr><td>${s.number}</td><td style="white-space:nowrap;">${s.name}</td>${['unit1_m1','unit1_m2','unit2_m1','unit2_m2','unit3_m1','unit3_m2'].map(m => `<td>${rm.includes(m)?'🔵 คืนงาน':(sm.includes(m)?`<button class="btn-p" style="background:#00ff41; color:#000; padding:5px; font-size:10px;" onclick="returnWork('${s.studentId}','${m}')">✅ ตรวจ</button>`:'❌')}</td>`).join('')}</tr>`; };
             box.innerHTML = generateRoomTabs('assignments') + generateGroupedTables(list, render, header);
         });
     }
